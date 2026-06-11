@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MUNDIAL UBICO 2026</title>
+    <title>Oficjalny Typer Mundial 2026</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/twemoji-amazed/twemoji-amazed.css">
     <style>
         :root { --primary: #01c38d; --bg: #131927; --card: #1e2640; --text: #ffffff; --danger: #ff4a4a; }
         body { font-family: 'Twemoji Amazed', 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .container { max-width: 600px; width: 100%; }
+        .container { max-width: 600px; width: 100%; box-sizing: border-box; }
         
         /* Style dla sekcji LOGO */
         .logo-container { text-align: center; margin-bottom: 10px; width: 100%; }
@@ -16,13 +16,14 @@
         
         h1, h2 { text-align: center; color: var(--primary); margin-bottom: 5px; }
         .group-header-active { background: #1a2238; color: var(--primary); font-weight: bold; padding: 12px; border-radius: 6px; margin: 15px 0; text-align: center; font-size: 18px; border: 2px solid var(--primary); }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; box-sizing: border-box; }
         input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: none; box-sizing: border-box; }
         input[type="text"] { background: #2a3558; color: white; font-size: 16px; }
         button { background: var(--primary); color: var(--bg); font-weight: bold; cursor: pointer; font-size: 16px; }
         button:disabled { background: #4a5568; color: #a0aec0; cursor: not-allowed; box-shadow: none !important; }
         button:hover:not(:disabled) { opacity: 0.9; }
         .hidden { display: none; }
+        
         .match-row { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; padding-bottom: 8px; border-bottom: 1px solid #2a3558; }
         .match-info { display: flex; flex-direction: column; width: 65%; }
         .match-teams { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
@@ -31,13 +32,35 @@
         .score-inputs { display: flex; gap: 8px; align-items: center; }
         .score-inputs input { width: 42px; text-align: center; margin: 0; padding: 6px; background: #2a3558; color: white; border: none; border-radius: 4px; font-size: 16px; }
         .score-inputs input:disabled { background: #131927; color: #6c7a9c; cursor: not-allowed; }
+        
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 1600px; }
         th, td { padding: 12px 8px; text-align: center; border-bottom: 1px solid #2a3558; font-size: 12px; }
         th { color: var(--primary); background: #1a2238; font-weight: 600; vertical-align: middle; }
         .th-match-header { font-size: 11px; font-weight: bold; color: white; white-space: nowrap; min-width: 90px; text-align: center; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .progress-bar { display: flex; justify-content: space-between; margin-bottom: 15px; background: #1a2238; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; flex-wrap: wrap; gap: 4px; }
-        .progress-step { color: #6c7a9c; cursor: pointer; padding: 4px 6px; border-radius: 4px; transition: background 0.2s; }
+        
+        /* POPRAWIONA SIATKA GRUP (3 RZĘDY PO 4 PRZYCISKI) */
+        .progress-bar { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 6px; 
+            background: #1a2238; 
+            padding: 8px; 
+            border-radius: 6px; 
+            margin-bottom: 15px; 
+            box-sizing: border-box;
+        }
+        .progress-step { 
+            color: #6c7a9c; 
+            background: #131927;
+            cursor: pointer; 
+            padding: 10px 0; 
+            border-radius: 4px; 
+            transition: background 0.2s; 
+            text-align: center; 
+            font-size: 14px; 
+            font-weight: bold;
+        }
         .progress-step:hover { background: #2a3558; color: white; }
         .progress-step.active { color: var(--bg); background: var(--primary); }
 
@@ -54,7 +77,7 @@
         <img src="https://i.ibb.co/Psxd4P4g/UBICO-MUNDIAL.jpg" alt="Logo Typera">
     </div>
 
-    <h1>🏆 MUNDIAL UBICO 2026 ⚽</h1>
+    <h1>🏆 TYPER MUNDIAL 2026 ⚽</h1>
 
     <div id="login-screen" class="card">
         <h2>Wpisz swój Nick, aby wejść:</h2>
@@ -232,13 +255,14 @@
         setTimeout(() => { loadAllScores(); }, 200);
     }
 
+    // Generator zmieniony na czyste litery dla zachowania idealnego układu 4x3
     function renderProgressBar() {
         const bar = document.getElementById('steps-bar');
         bar.innerHTML = "";
         groupsOrder.forEach((g, idx) => {
             const span = document.createElement('span');
             span.className = `progress-step ${idx === currentGroupIndex ? 'active' : ''}`;
-            span.innerText = `GR. ${g}`;
+            span.innerText = g; 
             span.onclick = () => changeGroup(idx);
             bar.appendChild(span);
         });
@@ -337,7 +361,7 @@
         let allFilled = true;
 
         rows.forEach(row => {
-            const isLocked = row.getAttribute('data-locked') === "true";
+            const isLocked = row.getAttribute('data-locked'] === "true";
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
@@ -366,7 +390,7 @@
 
         rows.forEach(row => {
             const id = row.getAttribute('data-id');
-            const isLocked = row.getAttribute('data-locked') === "true";
+            const isLocked = row.getAttribute('data-locked'] === "true";
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
