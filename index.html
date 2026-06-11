@@ -3,64 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundial Ubico 2026</title>
+    <title>MUNDIAL UBICO 2026</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/twemoji-amazed/twemoji-amazed.css">
     <style>
         :root { --primary: #01c38d; --bg: #131927; --card: #1e2640; --text: #ffffff; --danger: #ff4a4a; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .container { max-width: 600px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: 'Twemoji Amazed', 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 600px; width: 100%; }
         
-        .logo-container { width: 100%; text-align: center; margin-bottom: 10px; margin-top: 10px; }
-        .app-logo { max-width: 150px; height: auto; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); object-fit: contain; }
+        /* Style dla sekcji LOGO */
+        .logo-container { text-align: center; margin-bottom: 10px; width: 100%; }
+        .logo-container img { max-width: 180px; width: 100%; height: auto; object-fit: containment; }
         
-        h1, h2 { text-align: center; color: var(--primary); margin-bottom: 5px; width: 100%; }
+        h1, h2 { text-align: center; color: var(--primary); margin-bottom: 5px; }
         .group-header-active { background: #1a2238; color: var(--primary); font-weight: bold; padding: 12px; border-radius: 6px; margin: 15px 0; text-align: center; font-size: 18px; border: 2px solid var(--primary); }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; width: 100%; box-sizing: border-box; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; }
         input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: none; box-sizing: border-box; }
         input[type="text"] { background: #2a3558; color: white; font-size: 16px; }
         button { background: var(--primary); color: var(--bg); font-weight: bold; cursor: pointer; font-size: 16px; }
         button:disabled { background: #4a5568; color: #a0aec0; cursor: not-allowed; box-shadow: none !important; }
         button:hover:not(:disabled) { opacity: 0.9; }
         .hidden { display: none; }
-        
-        /* LISTA MECZÓW DO OBSTAWIANIA */
         .match-row { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; padding-bottom: 8px; border-bottom: 1px solid #2a3558; }
         .match-info { display: flex; flex-direction: column; width: 65%; }
-        .match-teams { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .match-teams { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .match-date { font-size: 11px; color: #8a99ad; margin-top: 3px; }
         .locked-text { color: var(--danger); font-weight: bold; }
         .score-inputs { display: flex; gap: 8px; align-items: center; }
         .score-inputs input { width: 42px; text-align: center; margin: 0; padding: 6px; background: #2a3558; color: white; border: none; border-radius: 4px; font-size: 16px; }
         .score-inputs input:disabled { background: #131927; color: #6c7a9c; cursor: not-allowed; }
-        
-        /* NOWE STYLE DLA FLAG OBRAZKOWYCH (DLA PC I TELEFONU) */
-        .flag-img { width: 18px; height: 13px; object-fit: cover; border-radius: 2px; vertical-align: middle; display: inline-block; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        
-        /* TABELA WYNIKÓW GLOBALNYCH */
-        .table-container { width: 100%; overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid #2a3558; }
-        table { width: 100%; border-collapse: collapse; min-width: max-content; }
-        th, td { padding: 10px 12px; text-align: center; border-bottom: 1px solid #2a3558; border-right: 1px solid #2a3558; font-size: 13px; white-space: nowrap; }
-        th { color: var(--primary); background: #1a2238; font-weight: 600; }
-        
-        /* Przypięcie pierwszej kolumny (Gracz) */
-        th:first-child, td:first-child { position: sticky; left: 0; background: #1e2640; z-index: 2; font-weight: bold; color: var(--primary); text-align: left; border-right: 2px solid var(--primary); }
-        th:first-child { background: #1a2238; z-index: 3; }
-        
-        .th-match-header { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
-        .th-match-header .flags { display: flex; gap: 3px; align-items: center; margin-bottom: 2px; }
-        .th-match-header .teams { color: #8a99ad; font-size: 10px; font-weight: normal; }
-
-        .progress-bar { display: flex; justify-content: space-between; margin-bottom: 15px; background: #1a2238; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; flex-wrap: wrap; gap: 4px; width: 100%; box-sizing: border-box; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 1600px; }
+        th, td { padding: 12px 8px; text-align: center; border-bottom: 1px solid #2a3558; font-size: 12px; }
+        th { color: var(--primary); background: #1a2238; font-weight: 600; vertical-align: middle; }
+        .th-match-header { font-size: 11px; font-weight: bold; color: white; white-space: nowrap; min-width: 90px; text-align: center; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .progress-bar { display: flex; justify-content: space-between; margin-bottom: 15px; background: #1a2238; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; flex-wrap: wrap; gap: 4px; }
         .progress-step { color: #6c7a9c; cursor: pointer; padding: 4px 6px; border-radius: 4px; transition: background 0.2s; }
         .progress-step:hover { background: #2a3558; color: white; }
         .progress-step.active { color: var(--bg); background: var(--primary); }
+
+        /* Media query dla komputerów / większych ekranów */
+        @media (min-width: 768px) {
+            .logo-container img { max-width: 240px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
     <div class="logo-container">
-        <img src="https://i.ibb.co/Psxd4P4g/UBICO-MUNDIAL.jpg" alt="Logo Ekipy" class="app-logo" onerror="this.style.display='none'">
+        <img src="https://i.ibb.co/Psxd4P4g/UBICO-MUNDIAL.jpg" alt="Logo Typera">
     </div>
 
     <h1>🏆 MUNDIAL UBICO 2026 ⚽</h1>
@@ -68,7 +59,7 @@
     <div id="login-screen" class="card">
         <h2>Wpisz swój Nick, aby wejść:</h2>
         <input type="text" id="nick-input" placeholder="np. Fabby...">
-        <button id="login-btn" onclick="saveNick()">Rozpocznij typowanie</button>
+        <button onclick="saveNick()">Rozpocznij typowanie</button>
     </div>
 
     <div id="app-screen" class="hidden">
@@ -87,14 +78,11 @@
 
         <div class="card">
             <h2>📊 Wszystkie Typy Graczy (Faza Grupowa)</h2>
-            <button onclick="loadAllScores()" style="background:#2a3558; color:white; font-size:12px; padding:8px; margin-bottom:10px; width:auto; border-radius:4px;">🔄 Odśwież tabelę</button>
+            <button onclick="loadAllScores()" style="background:#2a3558; color:white; font-size:12px; padding:6px; margin-bottom:10px; width:auto;">🔄 Odśwież tabelę</button>
             <div class="table-container">
                 <table id="global-table">
-                    <thead id="table-head">
-                        </thead>
-                    <tbody id="table-body">
-                        <tr><td>Zaloguj się, aby pobrać dane graczy...</td></tr>
-                    </tbody>
+                    <thead id="table-head"></thead>
+                    <tbody id="table-body"></tbody>
                 </table>
             </div>
         </div>
@@ -102,42 +90,27 @@
 </div>
 
 <script>
-    // ⚠️ ZMIEŃ TO NA SWÓJ LINK Z SHEETDB
+    // ⚠️ TUTAJ WKLEJ SWÓJ LINK Z SHEETDB
     const API_URL = "https://sheetdb.io/api/v1/p2i6amtlbbdei"; 
 
     const groupsOrder = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let currentGroupIndex = 0; 
     let localDraftScores = {};
 
-    // Kody ISO państw potrzebne do generowania niezawodnych obrazków flag na PC i telefon
-    const countryCodes = {
-        "Meksyk": "mx", "RPA": "za", "Korea Płd.": "kr", "Czechy": "cz",
-        "Kanada": "ca", "Bośnia i Herc.": "ba", "Katar": "qa", "Szwajcaria": "ch",
-        "Brazylia": "br", "Maroko": "ma", "Haiti": "ht", "Szkocja": "gb-sct",
-        "USA": "us", "Paragwaj": "py", "Australia": "au", "Turcja": "tr",
-        "Niemcy": "de", "Curacao": "cw", "WKS": "ci", "Ekwador": "ec",
-        "Holandia": "nl", "Japonia": "jp", "Szwecja": "se", "Tunezja": "tn",
-        "Belgia": "be", "Egipt": "eg", "Iran": "ir", "Nowa Zelandia": "nz",
-        "Hiszpania": "es", "Rep. Ziel. Przyl.": "cv", "Arabia Saud.": "sa", "Urugwaj": "uy",
-        "Francja": "fr", "Senegal": "sn", "Irak": "iq", "Norwegia": "no",
-        "Argentyna": "ar", "Algieria": "dz", "Austria": "at", "Jordania": "jo",
-        "Portugalia": "pt", "DR Kongo": "cd", "Uzbekistan": "uz", "Kolumbia": "co",
-        "Anglia": "gb-eng", "Chorwacja": "hr", "Ghana": "gh", "Panama": "pa"
-    };
-
-    const teamShorts = {
-        "Meksyk": "MEK", "RPA": "RPA", "Korea Płd.": "KOR", "Czechy": "CZE",
-        "Kanada": "KAN", "Bośnia i Herc.": "BOS", "Katar": "KAT", "Szwajcaria": "SZW",
-        "Brazylia": "BRA", "Maroko": "MAR", "Haiti": "HAI", "Szkocja": "SZK",
-        "USA": "USA", "Paragwaj": "PAR", "Australia": "AUS", "Turcja": "TUR",
-        "Niemcy": "NIE", "Curacao": "CUR", "WKS": "WKS", "Ekwador": "EKW",
-        "Holandia": "HOL", "Japonia": "JAP", "Szwecja": "SZW", "Tunezja": "TUN",
-        "Belgia": "BEL", "Egipt": "EGI", "Iran": "IRA", "Nowa Zelandia": "NOW",
-        "Hiszpania": "HIS", "Rep. Ziel. Przyl.": "ZPR", "Arabia Saud.": "ARA", "Urugwaj": "URU",
-        "Francja": "FRA", "Senegal": "SEN", "Irak": "IRA", "Norwegia": "NOR",
-        "Argentyna": "ARG", "Algieria": "ALG", "Austria": "AUS", "Jordania": "JOR",
-        "Portugalia": "POR", "DR Kongo": "DRK", "Uzbekistan": "UZB", "Kolumbia": "KOL",
-        "Anglia": "ANG", "Chorwacja": "CHO", "Ghana": "GHA", "Panama": "PAN"
+    // Słownik generujący flagi dynamicznie
+    const teamFlags = {
+        "Meksyk": "🇲🇽", "RPA": "🇿🇦", "Korea Płd.": "🇰🇷", "Czechy": "🇨🇿",
+        "Kanada": "🇨🇦", "Bośnia i Herc.": "🇧🇦", "Katar": "🇶🇦", "Szwajcaria": "🇨🇭",
+        "Brazylia": "🇧🇷", "Maroko": "🇲🇦", "Haiti": "🇭🇹", "Szkocja": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+        "USA": "🇺🇸", "Paragwaj": "🇵🇾", "Australia": "🇦🇺", "Turcja": "🇹🇷",
+        "Niemcy": "🇩🇪", "Curacao": "🇨🇼", "WKS": "🇨🇮", "Ekwador": "🇪🇨",
+        "Holandia": "🇳🇱", "Japonia": "🇯🇵", "Szwecja": "🇸🇪", "Tunezja": "🇹🇳",
+        "Belgia": "🇧🇪", "Egipt": "🇪🇬", "Iran": "🇮🇷", "Nowa Zelandia": "🇳🇿",
+        "Hiszpania": "🇪🇸", "Rep. Ziel. Przyl.": "🇨🇻", "Arabia Saud.": "🇸🇦", "Urugwaj": "🇺🇾",
+        "Francja": "🇫🇷", "Senegal": "🇸🇳", "Irak": "🇮🇶", "Norwegia": "🇳🇴",
+        "Argentyna": "🇦🇷", "Algieria": "🇩🇿", "Austria": "🇦🇹", "Jordania": "🇯🇴",
+        "Portugalia": "🇵🇹", "DR Kongo": "🇨🇩", "Uzbekistan": "🇺🇿", "Kolumbia": "🇨🇴",
+        "Anglia": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Chorwacja": "🇭🇷", "Ghana": "🇬🇭", "Panama": "🇵🇦"
     };
 
     const allMatches = [
@@ -194,7 +167,7 @@
         { id: "Mecz43", group: "H", t1: "Hiszpania", t2: "Rep. Ziel. Przyl.", lock: "2026-06-15T18:00:00" },
         { id: "Mecz44", group: "H", t1: "Arabia Saud.", t2: "Urugwaj", lock: "2026-06-16T00:00:00" },
         { id: "Mecz45", group: "H", t1: "Hiszpania", t2: "Arabia Saud.", lock: "2026-06-21T18:00:00" },
-        { id: "Mecz46", group: "H", t1: "Urugwaj", t2: "Rep. Ziel. Przyl.", lock: "2026-06-22+00:00" },
+        { id: "Mecz46", group: "H", t1: "Urugwaj", t2: "Rep. Ziel. Przyl.", lock: "2026-06-22T00:00:00" },
         { id: "Mecz47", group: "H", t1: "Rep. Ziel. Przyl.", t2: "Arabia Saud.", lock: "2026-06-27T02:00:00" },
         { id: "Mecz48", group: "H", t1: "Urugwaj", t2: "Hiszpania", lock: "2026-06-27T02:00:00" },
         // GRUPA I
@@ -227,49 +200,23 @@
         { id: "Mecz72", group: "L", t1: "Chorwacja", t2: "Ghana", lock: "2026-06-27T23:00:00" }
     ];
 
-    // Pomocnicza funkcja generująca bezpieczny tag obrazka flagi dla PC i Mobile
-    function getFlagImgTag(teamName) {
-        const code = countryCodes[teamName] || "un";
-        return `<img class="flag-img" src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/${getTwemojiUnicode(code)}.svg" alt="${teamName}">`;
-    }
-
-    // Konwersja prostych kodów na Unicody wymagane przez system Twemoji
-    function getTwemojiUnicode(code) {
-        if(code === "gb-eng") return "1f3f4-e0067-e0062-e0065-e006e-e0067-e007f";
-        if(code === "gb-sct") return "1f3f4-e0067-e0062-e0073-e0063-e0074-e007f";
-        const char1 = code.charCodeAt(0) - 97 + 0x1F1E6;
-        const char2 = code.charCodeAt(1) - 97 + 0x1F1E6;
-        return char1.toString(16) + "-" + char2.toString(16);
+    // Funkcja generująca bezpieczny format: Flaga + 3-literowy skrót
+    function getFlagAnd3LetterCode(teamName) {
+        if (!teamName) return "???";
+        const flag = teamFlags[teamName] || "";
+        const shortText = teamName.substring(0, 3).toUpperCase();
+        return `<span class="twa"></span> ${flag} ${shortText}`;
     }
 
     window.onload = function() {
+        localStorage.removeItem('cachedMatches');
         const savedNick = localStorage.getItem('typerNick');
         if (savedNick) { showApp(savedNick); }
     };
 
-    async function saveNick() {
-        const nickInput = document.getElementById('nick-input');
-        const loginBtn = document.getElementById('login-btn');
-        const nick = nickInput.value.trim();
-        
+    function saveNick() {
+        const nick = document.getElementById('nick-input').value.trim();
         if (nick.length < 3) return alert('Nick musi mieć min. 3 znaki!');
-
-        loginBtn.disabled = true;
-        loginBtn.innerText = "Logowanie...";
-
-        try {
-            if(!API_URL.includes("TWÓJ_INDYWIDUALNY_KOD")) {
-                const resCheck = await fetch(`${API_URL}`);
-                const allPlayers = await resCheck.json();
-                if (Array.isArray(allPlayers)) {
-                    const playerExists = allPlayers.some(p => p.Gracz && p.Gracz.toLowerCase() === nick.toLowerCase());
-                    if (playerExists) { alert(`Witaj ponownie, ${nick}! Wczytuję Twoje typy.`); }
-                }
-            }
-        } catch (e) {
-            console.log("Błąd bazy, logowanie awaryjne:", e);
-        }
-
         localStorage.setItem('typerNick', nick);
         showApp(nick);
     }
@@ -281,8 +228,8 @@
         
         renderProgressBar();
         renderActiveGroup();
-        buildTableHeader();
-        loadAllScores();
+        
+        setTimeout(() => { loadAllScores(); }, 200);
     }
 
     function renderProgressBar() {
@@ -343,18 +290,18 @@
             const savedHome = localDraftScores[`home-${match.id}`] || "";
             const savedAway = localDraftScores[`away-${match.id}`] || "";
 
-            const f1Tag = getFlagImgTag(match.t1);
-            const f2Tag = getFlagImgTag(match.t2);
+            const f1 = teamFlags[match.t1] || "";
+            const f2 = teamFlags[match.t2] || "";
 
             div.innerHTML = `
                 <div class="match-info">
-                    <span class="match-teams"><span>${f1Tag}</span> ${match.t1} - <span>${f2Tag}</span> ${match.t2}</span>
+                    <span class="match-teams">${f1} ${match.t1} - ${f2} ${match.t2}</span>
                     <span class="match-date">${isLocked ? '<span class="locked-text">🔒 ZABLOKOWANY</span>' : '⏰ Start PL: ' + match.lock.replace('T', ' ')}</span>
                 </div>
                 <div class="score-inputs">
                     <input type="number" class="home-team" id="home-${match.id}" min="0" placeholder="-" value="${savedHome}" ${isLocked ? 'disabled' : ''} oninput="handleHomeInput('${match.id}')">
                     <span>:</span>
-                    <input type="number" class="away-team" id="away-${match.id}" min="0" placeholder="-" value="${savedAway}" ${isLocked ? 'disabled' : ''} oninput="handleAwayInput('${match.id}', ${nextMatchId ? `'${nextMatchId}'` : 'null'})">
+                    <input type="number" class="away-team" id="away-${match.id}" min="0" placeholder="-" value="${savedAway}" ${isLocked ? 'disabled' : ''} oninput="handleAwayInput('${match.id}', '${nextMatchId}')">
                 </div>
             `;
             container.appendChild(div);
@@ -366,7 +313,7 @@
     function handleHomeInput(matchId) {
         const homeInput = document.getElementById(`home-${matchId}`);
         const awayInput = document.getElementById(`away-${matchId}`);
-        if (homeInput && homeInput.value !== "" && awayInput && !awayInput.disabled) {
+        if (homeInput.value !== "") {
             awayInput.focus();
         }
         saveCurrentInputsToDraft();
@@ -374,10 +321,10 @@
     }
 
     function handleAwayInput(currentMatchId, nextMatchId) {
-        if (nextMatchId) {
-            const awayInput = document.getElementById(`away-${currentMatchId}`);
+        const awayInput = document.getElementById(`away-${currentMatchId}`);
+        if (awayInput.value !== "" && nextMatchId) {
             const nextHomeInput = document.getElementById(`home-${nextMatchId}`);
-            if (awayInput && awayInput.value !== "" && nextHomeInput && !nextHomeInput.disabled) {
+            if (nextHomeInput && !nextHomeInput.disabled) {
                 nextHomeInput.focus();
             }
         }
@@ -394,7 +341,9 @@
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
-                if (home === "" || away === "") { allFilled = false; }
+                if (home === "" || away === "") {
+                    allFilled = false;
+                }
             }
         });
 
@@ -425,11 +374,6 @@
             }
         });
 
-        if(API_URL.includes("TWÓJ_INDYWIDUALNY_KOD")) {
-            alert("Podłącz swój link z SheetDB w kodzie, aby zapisać!");
-            return;
-        }
-
         try {
             const resCheck = await fetch(`${API_URL}/search?Gracz=${nick}`);
             const existing = await resCheck.json();
@@ -450,73 +394,65 @@
             }
 
             if (currentGroupIndex < groupsOrder.length - 1) {
-                alert(`Grupa ${groupsOrder[currentGroupIndex]} zapisana! 🚀`);
+                alert(`Grupa ${groupsOrder[currentGroupIndex]} zapisana pomyślnie! Idziemy dalej. 🚀`);
                 currentGroupIndex++;
                 renderProgressBar();
                 renderActiveGroup();
                 loadAllScores();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
-                alert("Wszystkie grupy obstawione! 🎉");
+                alert("Genialnie! Wszystkie grupy od A do L zostały pomyślnie obstawione i zapisane w bazie! 🎉");
                 loadAllScores();
             }
         } catch (error) {
-            alert('Błąd zapisu. Spróbuj ponownie.');
+            alert('Błąd połączenia z bazą danych SheetDB. Spróbuj ponownie.');
         }
     }
 
-    function buildTableHeader() {
-        const thead = document.getElementById('table-head');
-        let html = `<tr><th>Gracz</th>`;
-        
-        allMatches.forEach(m => {
-            const f1Tag = getFlagImgTag(m.t1);
-            const f2Tag = getFlagImgTag(m.t2);
-            const s1 = teamShorts[m.t1] || "??";
-            const s2 = teamShorts[m.t2] || "??";
-            
-            html += `
-                <th>
-                    <div class="th-match-header">
-                        <div class="flags">${f1Tag}${f2Tag}</div>
-                        <div class="teams">${s1}-${s2}</div>
-                    </div>
-                </th>
-            `;
-        });
-        
-        html += `</tr>`;
-        thead.innerHTML = html;
-    }
-
     async function loadAllScores() {
-        if(API_URL.includes("TWÓJ_INDYWIDUALNY_KOD")) return;
+        const thead = document.getElementById('table-head');
         const tbody = document.getElementById('table-body');
         
         try {
             const response = await fetch(API_URL);
             const data = await response.json();
             
+            thead.innerHTML = "";
+            const trHead = document.createElement('tr');
+            trHead.innerHTML = "<th style='position:sticky; left:0; background:#1a2238; z-index:3;'>Gracz</th>";
+            
+            allMatches.forEach(m => {
+                const homeFormat = getFlagAnd3LetterCode(m.t1);
+                const awayFormat = getFlagAnd3LetterCode(m.t2);
+
+                trHead.innerHTML += `
+                    <th>
+                        <div class="th-match-header">
+                            ${homeFormat}-${awayFormat}
+                        </div>
+                    </th>`;
+            });
+            thead.appendChild(trHead);
+
             tbody.innerHTML = "";
             if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${allMatches.length + 1}">Brak wpisów w bazie. Bądź pierwszy!</td></tr>`;
+                tbody.innerHTML = "<tr><td colspan='73'>Brak wpisów w bazie danych. Bądź pierwszy!</td></tr>";
                 return;
             }
 
             data.forEach(row => {
                 if (!row.Gracz) return;
                 const tr = document.createElement('tr');
+                let rowHtml = `<td style="font-weight:bold; color:#01c38d; position:sticky; left:0; background:#131927; z-index:1;">${row.Gracz}</td>`;
                 
-                let rowHtml = `<td>${row.Gracz}</td>`;
                 allMatches.forEach(m => {
                     rowHtml += `<td>${row[m.id] || '-'}</td>`;
                 });
-                
                 tr.innerHTML = rowHtml;
                 tbody.appendChild(tr);
             });
         } catch (error) {
-            tbody.innerHTML = `<tr><td colspan="${allMatches.length + 1}">Błąd ładowania tabeli...</td></tr>`;
+            tbody.innerHTML = "<tr><td colspan='73'>Oczekiwanie na pierwsze zapisy w bazie lub błąd połączenia...</td></tr>";
         }
     }
 </script>
