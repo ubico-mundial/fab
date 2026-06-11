@@ -51,7 +51,7 @@
 
     <div id="app-screen" class="hidden">
         <div class="card">
-            <h3>Cześć <span id="user-display" style="color:var(--primary)"></span>!</h3>
+            <h3>Cześć <span id="user-display" style="color:var(--primary)"></span>! Obstaw mecze:</h3>
             
             <div class="progress-bar" id="steps-bar"></div>
 
@@ -162,24 +162,24 @@
         { id: "Mecz64", group: "K", t1: "🇨🇴 Kolumbia", t2: "🇨🇩 DR Kongo", lock: "2026-06-24T04:00:00" },
         { id: "Mecz65", group: "K", t1: "🇨🇴 Kolumbia", t2: "🇵🇹 Portugalia", lock: "2026-06-28T01:30:00" },
         { id: "Mecz66", group: "K", t1: "🇨🇩 DR Kongo", t2: "🇺🇿 Uzbekistan", lock: "2026-06-28T01:30:00" },
-        // GRUPA L
-        { id: "Mecz67", group: "L", t1: "🏴_☠️ Anglia", t2: "🇭🇷 Chorwacja", lock: "2026-06-17T22:00:00" },
+        // GRUPA L - POPRAWIONE FLAGI ANGLII ZAMIAST PIRACKICH
+        { id: "Mecz67", group: "L", t1: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglia", t2: "🇭🇷 Chorwacja", lock: "2026-06-17T22:00:00" },
         { id: "Mecz68", group: "L", t1: "🇬🇭 Ghana", t2: "🇵🇦 Panama", lock: "2026-06-18T01:00:00" },
-        { id: "Mecz69", group: "L", t1: "🏴_☠️ Anglia", t2: "🇬🇭 Ghana", lock: "2026-06-23T22:00:00" },
+        { id: "Mecz69", group: "L", t1: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglia", t2: "🇬🇭 Ghana", lock: "2026-06-23T22:00:00" },
         { id: "Mecz70", group: "L", t1: "🇵🇦 Panama", t2: "🇭🇷 Chorwacja", lock: "2026-06-24T01:00:00" },
-        { id: "Mecz71", group: "L", t1: "🇵🇦 Panama", t2: "🏴_☠️ Anglia", lock: "2026-06-27T23:00:00" },
+        { id: "Mecz71", group: "L", t1: "🇵🇦 Panama", t2: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglia", lock: "2026-06-27T23:00:00" },
         { id: "Mecz72", group: "L", t1: "🇭🇷 Chorwacja", t2: "🇬🇭 Ghana", lock: "2026-06-27T23:00:00" }
     ];
 
-    // Funkcja wyciągająca czystą ikonę flagi (pierwsze znaki z tekstu)
     function extractFlag(teamString) {
-        const match = teamString.match(/^([\uD83C,\uD83D,\uD83E,\u2000-\u3000]+/);
+        if (!teamString) return "";
+        const match = teamString.match(/^([\uD83C,\uD83D,\uD83E,\u2000-\u3000\u200d\u2600-\u27BF]+)/);
         return match ? match[0].trim() : "";
     }
 
-    // Funkcja czyszcząca tekst z emoji, aby pobrać bezpieczne 3 litery nazwy państwa
     function getClean3LetterName(teamString) {
-        const withoutEmoji = teamString.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDFFF]/g, '');
+        if (!teamString) return "???";
+        const withoutEmoji = teamString.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDFFF]|\u200d/g, '');
         return withoutEmoji.trim().substring(0, 3).toUpperCase();
     }
 
@@ -199,9 +199,13 @@
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('app-screen').classList.remove('hidden');
         document.getElementById('user-display').innerText = nick;
+        
+        // Najpierw bezpiecznie generujemy strukturę grup i mecze
         renderProgressBar();
         renderActiveGroup();
-        loadAllScores();
+        
+        // Tabelę ładujemy w tle, żeby ewentualny błąd serwera nie zamroził typera
+        setTimeout(() => { loadAllScores(); }, 200);
     }
 
     function renderProgressBar() {
@@ -388,4 +392,46 @@
             
             thead.innerHTML = "";
             const trHead = document.createElement('tr');
-            trHead.innerHTML = "<th style='position:sticky; left:0;
+            trHead.innerHTML = "<th style='position:sticky; left:0; background:#1a2238; z-index:3;'>Gracz</th>";
+            
+            allMatches.forEach(m => {
+                const flag1 = extractFlag(m.t1);
+                const flag2 = extractFlag(m.t2);
+                const name1 = getClean3LetterName(m.t1);
+                const name2 = getClean3LetterName(m.t2);
+
+                trHead.innerHTML += `
+                    <th>
+                        <div class="th-match-header">
+                            <div class="th-flags">${flag1}${flag2}</div>
+                            <div class="th-names">${name1}-${name2}</div>
+                        </div>
+                    </th>`;
+            });
+            thead.appendChild(trHead);
+
+            tbody.innerHTML = "";
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='73'>Brak wpisów w bazie danych. Bądź pierwszy!</td></tr>";
+                return;
+            }
+
+            data.forEach(row => {
+                if (!row.Gracz) return;
+                const tr = document.createElement('tr');
+                let rowHtml = `<td style="font-weight:bold; color:#01c38d; position:sticky; left:0; background:#131927; z-index:1;">${row.Gracz}</td>`;
+                
+                allMatches.forEach(m => {
+                    rowHtml += `<td>${row[m.id] || '-'}</td>`;
+                });
+                tr.innerHTML = rowHtml;
+                tbody.appendChild(tr);
+            });
+        } catch (error) {
+            tbody.innerHTML = "<tr><td colspan='73'>Oczekiwanie na pierwsze zapisy w bazie lub błąd połączenia...</td></tr>";
+        }
+    }
+</script>
+</body>
+</html>
+
