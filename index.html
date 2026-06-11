@@ -26,12 +26,10 @@
         .score-inputs input { width: 42px; text-align: center; margin: 0; padding: 6px; background: #2a3558; color: white; border: none; border-radius: 4px; font-size: 16px; }
         .score-inputs input:disabled { background: #131927; color: #6c7a9c; cursor: not-allowed; }
         .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 1500px; }
-        th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #2a3558; font-size: 11px; }
-        th { color: var(--primary); background: #1a2238; font-size: 10px; font-weight: 600; vertical-align: bottom; }
-        .th-match-header { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 65px; }
-        .th-flags { font-size: 14px; letter-spacing: 2px; line-height: 1; }
-        .th-names { font-size: 9px; color: #a0aec0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 2800px; }
+        th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #2a3558; font-size: 13px; }
+        th { color: var(--primary); background: #1a2238; font-weight: 600; vertical-align: middle; }
+        .th-match-header { font-size: 12px; font-weight: bold; color: white; white-space: nowrap; min-width: 140px; text-align: center; }
         .progress-bar { display: flex; justify-content: space-between; margin-bottom: 15px; background: #1a2238; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; flex-wrap: wrap; gap: 4px; }
         .progress-step { color: #6c7a9c; cursor: pointer; padding: 4px 6px; border-radius: 4px; transition: background 0.2s; }
         .progress-step:hover { background: #2a3558; color: white; }
@@ -77,7 +75,7 @@
 </div>
 
 <script>
-    // ⚠️ TUTAJ WKLEJ SWÓJ LINK Z SHEETDB (ZAMIEŃ PONIŻSZY TEKST NA SWÓJ URL)
+    // ⚠️ LINK Z SHEETDB 
     const API_URL = "https://sheetdb.io/api/v1/p2i6amtlbbdei"; 
 
     const groupsOrder = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
@@ -171,21 +169,7 @@
         { id: "Mecz72", group: "L", t1: "🇭🇷 Chorwacja", t2: "🇬🇭 Ghana", lock: "2026-06-27T23:00:00" }
     ];
 
-    // Zupełnie nowy, bezpieczny system wycinania emoji (zapobiega krzakom )
-    function extractFlag(teamString) {
-        if (!teamString) return "";
-        const match = teamString.match(/^([\uD83C,\uD83D,\uD83E,\u2000-\u3000\u200d\u2600-\u27BF]+)/);
-        return match ? match[0].trim() : "";
-    }
-
-    function getClean3LetterName(teamString) {
-        if (!teamString) return "???";
-        const withoutEmoji = teamString.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDFFF]|\u200d/g, '');
-        return withoutEmoji.trim().substring(0, 3).toUpperCase();
-    }
-
     window.onload = function() {
-        // Czyścimy błędne stare stany z localStorage przy wejściu
         localStorage.removeItem('cachedMatches');
         const savedNick = localStorage.getItem('typerNick');
         if (savedNick) { showApp(savedNick); }
@@ -396,16 +380,10 @@
             trHead.innerHTML = "<th style='position:sticky; left:0; background:#1a2238; z-index:3;'>Gracz</th>";
             
             allMatches.forEach(m => {
-                const flag1 = extractFlag(m.t1);
-                const flag2 = extractFlag(m.t2);
-                const name1 = getClean3LetterName(m.t1);
-                const name2 = getClean3LetterName(m.t2);
-
                 trHead.innerHTML += `
                     <th>
                         <div class="th-match-header">
-                            <div class="th-flags">${flag1}${flag2}</div>
-                            <div class="th-names">${name1}-${name2}</div>
+                            ${m.t1} - ${m.t2}
                         </div>
                     </th>`;
             });
@@ -435,4 +413,3 @@
 </script>
 </body>
 </html>
-
