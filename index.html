@@ -38,10 +38,20 @@
         th { color: var(--primary); background: #1a2238; font-weight: 600; vertical-align: middle; }
         .th-match-header { font-size: 11px; font-weight: bold; color: white; white-space: nowrap; min-width: 90px; text-align: center; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 4px; }
         
-        /* NOWE STYLE DLA PODŚWIETLANIA W TABELI */
-        .cell-exact { background-color: #028a5a !important; color: white !important; font-weight: bold; } /* Zielony */
-        .cell-trend { background-color: #b8860b !important; color: white !important; font-weight: bold; } /* Żółty / Ciemne złoto (lepsza widoczność białego tekstu) */
-        .cell-miss { background-color: #8b0000 !important; color: #ffcccc !important; } /* Czerwony */
+        /* STYLE DLA PODŚWIETLANIA W TABELI */
+        .cell-exact { background-color: #028a5a !important; color: white !important; font-weight: bold; } 
+        .cell-trend { background-color: #b8860b !important; color: white !important; font-weight: bold; } 
+        .cell-miss { background-color: #8b0000 !important; color: #ffcccc !important; } 
+
+        /* STYLE DLA KLASYFIKACJI GENERALNEJ */
+        .leaderboard-table { min-width: 100% !important; }
+        .leaderboard-table th, .leaderboard-table td { padding: 10px; font-size: 14px; }
+        .leaderboard-row:nth-child(1) { background: rgba(255, 215, 0, 0.15); } /* Złoty akcent dla lidera */
+        .rank-badge { font-weight: bold; display: inline-block; width: 24px; height: 24px; line-height: 24px; border-radius: 50%; background: #2a3558; color: white; text-align: center; font-size: 12px; }
+        .leaderboard-row:nth-child(1) .rank-badge { background: #ffd700; color: #131927; }
+        .leaderboard-row:nth-child(2) .rank-badge { background: #c0c0c0; color: #131927; }
+        .leaderboard-row:nth-child(3) .rank-badge { background: #cd7f32; color: #131927; }
+        .stats-span { font-size: 11px; color: #8a99ad; margin-left: 5px; font-weight: normal; }
 
         .progress-bar { 
             display: grid; 
@@ -68,14 +78,8 @@
         .progress-step.active { color: var(--bg); background: var(--primary); }
 
         @media (min-width: 500px) {
-            .progress-bar {
-                grid-template-columns: repeat(12, 1fr); 
-                gap: 4px;
-            }
-            .progress-step {
-                padding: 6px 0;
-                font-size: 12px;
-            }
+            .progress-bar { grid-template-columns: repeat(12, 1fr); gap: 4px; }
+            .progress-step { padding: 6px 0; font-size: 12px; }
             .logo-container img { max-width: 240px; }
         }
     </style>
@@ -96,6 +100,7 @@
     </div>
 
     <div id="app-screen" class="hidden">
+        <!-- SEKCJA 1: OBSTAWIANIE -->
         <div class="card">
             <h3>Cześć <span id="user-display" style="color:var(--primary)"></span>! Obstaw mecze: <button onclick="logout()" style="width: auto; display: inline-block; padding: 4px 10px; margin: 0 0 0 10px; font-size: 11px; background: #ff4a4a; color: white;">Wyloguj (Zmień Nick)</button></h3>
             
@@ -109,13 +114,33 @@
             </button>
         </div>
 
+        <!-- SEKCJA 2: TABELA Z WYNIKAMI SZCZEGÓŁOWYMI -->
         <div class="card">
-            <h2>📊 Wszystkie Typy Graczy (Faza Grupowa)</h2>
-            <button onclick="loadAllScores()" style="background:#2a3558; color:white; font-size:12px; padding:6px; margin-bottom:10px; width:auto;">🔄 Odśwież tabelę</button>
+            <h2>📊 Szczegółowe Typy Graczy (Faza Grupowa)</h2>
+            <button onclick="loadAllScores()" style="background:#2a3558; color:white; font-size:12px; padding:6px; margin-bottom:10px; width:auto;">🔄 Odśwież tabelę i punkty</button>
             <div class="table-container">
                 <table id="global-table">
                     <thead id="table-head"></thead>
                     <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SEKCJA 3: PRZENIESIONA NA SAM DÓŁ — KLASYFIKACJA GENERALNA (LEADERBOARD) -->
+        <div class="card">
+            <h2>🏆 Klasyfikacja Generalna UBICO</h2>
+            <div class="table-container">
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">Poz.</th>
+                            <th style="text-align: left; padding-left: 15px;">Gracz</th>
+                            <th style="width: 100px;">Punkty</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <tr><td colspan="3">Obliczanie punktów...</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -145,11 +170,11 @@
         "Anglia": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Chorwacja": "🇭🇷", "Ghana": "🇬🇭", "Panama": "🇵🇦"
     };
 
-    // UWAGA: Do każdego meczu dodałem parametr 'score'. Gdy mecz się skończy, wpisz wynik np. "2:1" zamiast ""
+    // Oficjalne wyniki (Testowe wyniki dla meczu 1 i 2)
     const allMatches = [
         // GRUPA A
-        { id: "Mecz1", group: "A", t1: "Meksyk", t2: "RPA", lock: "2026-06-11T21:00:00", score: "2:0" }, // TEST: mecz zakończony wynikiem 2:1
-        { id: "Mecz2", group: "A", t1: "Korea Płd.", t2: "Czechy", lock: "2026-06-12T04:00:00", score: "" }, // TEST: mecz zakończony remisem 1:1
+        { id: "Mecz1", group: "A", t1: "Meksyk", t2: "RPA", lock: "2026-06-11T21:00:00", score: "2:1" }, 
+        { id: "Mecz2", group: "A", t1: "Korea Płd.", t2: "Czechy", lock: "2026-06-12T04:00:00", score: "1:1" }, 
         { id: "Mecz3", group: "A", t1: "Czechy", t2: "RPA", lock: "2026-06-18T18:00:00", score: "" },
         { id: "Mecz4", group: "A", t1: "Meksyk", t2: "Korea Płd.", lock: "2026-06-19T03:00:00", score: "" },
         { id: "Mecz5", group: "A", t1: "Czechy", t2: "Meksyk", lock: "2026-06-25T03:00:00", score: "" },
@@ -236,8 +261,7 @@
     function getFlagAnd3LetterCode(teamName) {
         if (!teamName) return "???";
         const flag = teamFlags[teamName] || "";
-        const shortText = teamName.substring(0, 3).toUpperCase();
-        return `<span class="twa"></span> ${flag} ${shortText}`;
+        return `<span class="twa"></span> ${flag} ${teamName.substring(0, 3).toUpperCase()}`;
     }
 
     window.onload = function() {
@@ -289,7 +313,7 @@
                 });
             }
         } catch (e) {
-            console.error("Błąd podczas pobierania dotychczasowych typów użytkownika:", e);
+            console.error(e);
         }
     }
 
@@ -354,7 +378,6 @@
             const f1 = teamFlags[match.t1] || "";
             const f2 = teamFlags[match.t2] || "";
 
-            // Wyświetlenie oficjalnego wyniku w formularzu, jeśli już padł
             let officialResultText = "";
             if(match.score && match.score !== "") {
                 officialResultText = ` <b style="color:var(--primary)">[Wynik: ${match.score}]</b>`;
@@ -379,9 +402,8 @@
 
     function handleHomeInput(matchId) {
         const homeInput = document.getElementById(`home-${matchId}`);
-        const awayInput = document.getElementById(`away-${matchId}`);
         if (homeInput.value !== "") {
-            awayInput.focus();
+            document.getElementById(`away-${matchId}`).focus();
         }
         saveCurrentInputsToDraft();
         validateGroupCompletion();
@@ -391,9 +413,7 @@
         const awayInput = document.getElementById(`away-${currentMatchId}`);
         if (awayInput.value !== "" && nextMatchId) {
             const nextHomeInput = document.getElementById(`home-${nextMatchId}`);
-            if (nextHomeInput && !nextHomeInput.disabled) {
-                nextHomeInput.focus();
-            }
+            if (nextHomeInput && !nextHomeInput.disabled) { nextHomeInput.focus(); }
         }
         saveCurrentInputsToDraft();
         validateGroupCompletion();
@@ -402,23 +422,19 @@
     function validateGroupCompletion() {
         const rows = document.querySelectorAll('.match-row');
         let allFilled = true;
-
         rows.forEach(row => {
             const isLocked = row.getAttribute('data-locked') === "true";
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
-                if (home === "" || away === "") {
-                    allFilled = false;
-                }
+                if (home === "" || away === "") allFilled = false;
             }
         });
 
         const btn = document.getElementById('submit-btn');
         if (allFilled) {
             btn.removeAttribute('disabled');
-            const isLast = currentGroupIndex === groupsOrder.length - 1;
-            btn.innerText = isLast ? "💾 Zapisz i Zakończ Typowanie!" : `💾 Zapisz i przejdź do Grupy ${groupsOrder[currentGroupIndex + 1]}`;
+            btn.innerText = currentGroupIndex === groupsOrder.length - 1 ? "💾 Zapisz i Zakończ Typowanie!" : `💾 Zapisz i przejdź do Grupy ${groupsOrder[currentGroupIndex + 1]}`;
         } else {
             btn.setAttribute('disabled', 'true');
             btn.innerText = "Wpisz wszystkie wyniki tej grupy, aby przejść dalej";
@@ -445,13 +461,10 @@
             const resCheck = await fetch(API_URL);
             const resJson = await resCheck.json();
             const existingRows = resJson[KEY_NAME] || [];
-
             const userRow = existingRows.find(r => r.gracz && r.gracz.toLowerCase() === nick.toLowerCase());
 
             if (userRow) {
-                const wrapper = {};
-                wrapper[KEY_NAME] = updateData;
-
+                const wrapper = {}; wrapper[KEY_NAME] = updateData;
                 await fetch(`${API_URL}/${userRow.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -459,9 +472,7 @@
                 });
             } else {
                 updateData["gracz"] = nick;
-                const wrapper = {};
-                wrapper[KEY_NAME] = updateData;
-
+                const wrapper = {}; wrapper[KEY_NAME] = updateData;
                 await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -470,60 +481,54 @@
             }
 
             if (currentGroupIndex < groupsOrder.length - 1) {
-                alert(`Grupa ${groupsOrder[currentGroupIndex]} zapisana pomyślnie! Idziemy dalej. 🚀`);
+                alert(`Grupa ${groupsOrder[currentGroupIndex]} zapisana! 🚀`);
                 currentGroupIndex++;
-                renderProgressBar();
-                renderActiveGroup();
-                loadAllScores();
+                renderProgressBar(); renderActiveGroup(); loadAllScores();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
-                alert("Genialnie! Wszystkie grupy od A do L zostały pomyślnie obstawione i zapisane w bazie! 🎉");
+                alert("Wszystkie grupy zapisane pomyślnie! 🎉");
                 loadAllScores();
             }
         } catch (error) {
             console.error(error);
-            alert('Błąd połączenia z bazą danych Sheety.co. Upewnij się, że włączyłeś obsługę PUT w panelu.');
+            alert('Błąd połączenia z bazą.');
         }
     }
 
-    // NOWA FUNKCJA LOGICZNA: Porównuje typ gracza z prawdziwym wynikiem i zwraca klasę CSS (kolor)
-    function getCellColorClass(playerPrediction, officialResult) {
+    // SYSTEM MATEMATYCZNEGO WYLICZANIA PUNKTÓW I KOLORÓW
+    function evaluatePrediction(playerPrediction, officialResult) {
         if (!officialResult || officialResult === "" || !playerPrediction || playerPrediction === "-" || !playerPrediction.includes(":")) {
-            return ""; // Mecz jeszcze nie rozegrany lub brak typu -> brak koloru
+            return { points: 0, cssClass: "", type: "none" }; 
         }
 
-        // Dokładny wynik (np. "2:1" === "2:1") -> ZIELONY
         if (playerPrediction.trim() === officialResult.trim()) {
-            return "cell-exact";
+            return { points: 45, cssClass: "cell-exact", type: "exact" }; 
         }
 
-        // Rozbijamy wyniki na bramki gospodarzy i gości
         const [pHome, pAway] = playerPrediction.split(":").map(Number);
         const [oHome, oAway] = officialResult.split(":").map(Number);
 
-        // Wyznaczamy trendy (kto wygrał lub remis)
-        // 1 = wygrana gospodarza, -1 = wygrana gościa, 0 = remis
         const playerTrend = pHome > pAway ? 1 : (pHome < pAway ? -1 : 0);
         const officialTrend = oHome > oAway ? 1 : (oHome < oAway ? -1 : 0);
 
-        // Jeśli trend się zgadza (np. obaj przewidzieli remis, albo wygraną gospodarza) -> ŻÓŁTY
         if (playerTrend === officialTrend) {
-            return "cell-trend";
+            return { points: 30, cssClass: "cell-trend", type: "trend" }; 
         }
 
-        // Całkowite pudło -> CZERWONY
-        return "cell-miss";
+        return { points: 0, cssClass: "cell-miss", type: "miss" }; 
     }
 
     async function loadAllScores() {
         const thead = document.getElementById('table-head');
         const tbody = document.getElementById('table-body');
+        const leaderboardBody = document.getElementById('leaderboard-body');
         
         try {
             const response = await fetch(API_URL);
             const data = await response.json();
             const existingRows = data[KEY_NAME] || [];
             
+            // 1. GENEROWANIE NAGŁÓWKA TABELI SZCZEGÓŁOWEJ
             thead.innerHTML = "";
             const trHead = document.createElement('tr');
             trHead.innerHTML = "<th style='position:sticky; left:0; background:#1a2238; z-index:3;'>Gracz</th>";
@@ -531,8 +536,6 @@
             allMatches.forEach(m => {
                 const homeFormat = getFlagAnd3LetterCode(m.t1);
                 const awayFormat = getFlagAnd3LetterCode(m.t2);
-                
-                // Jeśli mecz ma już oficjalny wynik, dodajemy go pod skrótami państw w tabeli nagłówkowej
                 const resultSub = m.score ? `<br><span style="color:#01c38d; font-size:10px;">(${m.score})</span>` : '';
 
                 trHead.innerHTML += `
@@ -545,14 +548,23 @@
             });
             thead.appendChild(trHead);
 
+            let playersLeaderboard = [];
+
+            // 2. GENEROWANIE WIERSZY DLA GRACZY I LICZENIE PUNKTÓW
             tbody.innerHTML = "";
             if (!Array.isArray(existingRows) || existingRows.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='73'>Brak wpisów w bazie danych. Bądź pierwszy!</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='73'>Brak wpisów w bazie danych.</td></tr>";
+                leaderboardBody.innerHTML = "<tr><td colspan='3'>Brak danych do stworzenia rankingu.</td></tr>";
                 return;
             }
 
             existingRows.forEach(row => {
                 if (!row.gracz) return;
+                
+                let totalPoints = 0;
+                let countExact = 0;
+                let countTrend = 0;
+
                 const tr = document.createElement('tr');
                 let rowHtml = `<td style="font-weight:bold; color:#01c38d; position:sticky; left:0; background:#131927; z-index:1;">${row.gracz}</td>`;
                 
@@ -560,20 +572,55 @@
                     const matchKey = m.id.toLowerCase();
                     const playerPrediction = row[matchKey] || '-';
                     
-                    // NOWOŚĆ: Generowanie klasy koloru na podstawie porównania wyników
-                    const colorClass = getCellColorClass(playerPrediction, m.score);
+                    const evaluation = evaluatePrediction(playerPrediction, m.score);
+                    
+                    totalPoints += evaluation.points;
+                    if (evaluation.type === "exact") countExact++;
+                    if (evaluation.type === "trend") countTrend++;
 
-                    rowHtml += `<td class="${colorClass}">${playerPrediction}</td>`;
+                    rowHtml += `<td class="${evaluation.cssClass}">${playerPrediction}</td>`;
                 });
+                
                 tr.innerHTML = rowHtml;
                 tbody.appendChild(tr);
+
+                playersLeaderboard.push({
+                    name: row.gracz,
+                    points: totalPoints,
+                    exacts: countExact,
+                    trends: countTrend
+                });
             });
+
+            // 3. DYNAMICZNE SORTOWANIE RANKINGU
+            playersLeaderboard.sort((a, b) => {
+                if (b.points !== a.points) {
+                    return b.points - a.points; 
+                }
+                return b.exacts - a.exacts; 
+            });
+
+            // 4. WYŚWIETLENIE RANKINGU W SEKCJI "Klasyfikacja Generalna"
+            leaderboardBody.innerHTML = "";
+            playersLeaderboard.forEach((player, index) => {
+                const trRank = document.createElement('tr');
+                trRank.className = "leaderboard-row";
+                trRank.innerHTML = `
+                    <td><span class="rank-badge">${index + 1}</span></td>
+                    <td style="text-align: left; padding-left: 15px; font-weight: bold; color: #fff;">
+                        ${player.name}
+                        <span class="stats-span">(🟢 x${player.exacts}, 🟡 x${player.trends})</span>
+                    </td>
+                    <td style="font-weight: bold; color: var(--primary); font-size: 16px;">${player.points} pkt</td>
+                `;
+                leaderboardBody.appendChild(trRank);
+            });
+
         } catch (error) {
             console.error(error);
-            tbody.innerHTML = "<tr><td colspan='73'>Oczekiwanie na pierwsze zapisy w bazie lub błąd połączenia...</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='73'>Błąd połączenia...</td></tr>";
         }
     }
 </script>
 </body>
 </html>
-
