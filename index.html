@@ -42,7 +42,7 @@
         /* Elastyczna nawigacja grup */
         .progress-bar { 
             display: grid; 
-            grid-template-columns: repeat(4, 1fr); /* Domyślnie na telefonie: 4 kolumny (3 rzędy) */
+            grid-template-columns: repeat(4, 1fr); 
             gap: 6px; 
             background: #1a2238; 
             padding: 8px; 
@@ -64,10 +64,9 @@
         .progress-step:hover { background: #2a3558; color: white; }
         .progress-step.active { color: var(--bg); background: var(--primary); }
 
-        /* Automatyczna poprawka dla ekranów komputerów (Szerokość od 500px w górę) */
         @media (min-width: 500px) {
             .progress-bar {
-                grid-template-columns: repeat(12, 1fr); /* Na komputerze wskakuje w 1 linię (12 kolumn) */
+                grid-template-columns: repeat(12, 1fr); 
                 gap: 4px;
             }
             .progress-step {
@@ -121,13 +120,12 @@
 </div>
 
 <script>
-    // Panel konfiguracyjny Sheety.co
     const API_URL = "https://api.sheety.co/d89fef0b82f42d75d6c5dd5ccfe7a1fc/untitledSpreadsheet/sheet1";
-    const KEY_NAME = "sheet1"; // Nazwa Twojej zakładki w Sheety (z małej litery)
+    const KEY_NAME = "sheet1"; 
 
     const groupsOrder = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let currentGroupIndex = 0; 
-    let localDraftScores = {};
+    let localDraftScores = {}; // Służy jako pamięć podręczna na aktualne i pobrane wyniki
 
     const teamFlags = {
         "Meksyk": "🇲🇽", "RPA": "🇿🇦", "Korea Płd.": "🇰🇷", "Czechy": "🇨🇿",
@@ -251,15 +249,42 @@
         showApp(nick);
     }
 
-    function showApp(nick) {
+    async function showApp(nick) {
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('app-screen').classList.remove('hidden');
         document.getElementById('user-display').innerText = nick;
         
+        // NOWOŚĆ: Pobieranie istniejących typów gracza przed pokazaniem formularza
+        await fetchUserExistingScores(nick);
+
         renderProgressBar();
         renderActiveGroup();
-        
-        setTimeout(() => { loadAllScores(); }, 200);
+        loadAllScores();
+    }
+
+    // NOWOŚĆ: Pobiera z Sheety wiersz zalogowanego gracza i ładuje go do pamięci podręcznej aplikacji
+    async function fetchUserExistingScores(nick) {
+        try {
+            const res = await fetch(API_URL);
+            const json = await res.json();
+            const existingRows = json[KEY_NAME] || [];
+            
+            const userRow = existingRows.find(r => r.gracz && r.gracz.toLowerCase() === nick.toLowerCase());
+            
+            if (userRow) {
+                allMatches.forEach(m => {
+                    const matchKey = m.id.toLowerCase();
+                    const score = userRow[matchKey]; // Pobiera np. "2:1"
+                    if (score && score.includes(":")) {
+                        const parts = score.split(":");
+                        localDraftScores[`home-${m.id}`] = parts[0].trim();
+                        localDraftScores[`away-${m.id}`] = parts[1].trim();
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("Błąd podczas pobierania dotychczasowych typów użytkownika:", e);
+        }
     }
 
     function renderProgressBar() {
@@ -317,6 +342,7 @@
             const nextMatch = groupMatches[index + 1];
             const nextMatchId = nextMatch ? nextMatch.id : null;
 
+            // Ładowanie wyników: najpierw z pamięci lokalnej (która teraz zawiera też dane z Sheety)
             const savedHome = localDraftScores[`home-${match.id}`] || "";
             const savedAway = localDraftScores[`away-${match.id}`] || "";
 
@@ -393,7 +419,6 @@
         const nick = localStorage.getItem('typerNick');
         const rows = document.querySelectorAll('.match-row');
         
-        // Zgodnie z Sheety, identyfikatory kolumn muszą być wysyłane z małej litery
         const updateData = {};
         rows.forEach(row => {
             const id = row.getAttribute('data-id');
@@ -406,16 +431,13 @@
         });
 
         try {
-            // Pobieramy całą listę z Sheety, aby ręcznie przefiltrować rekordy gracza
             const resCheck = await fetch(API_URL);
             const resJson = await resCheck.json();
             const existingRows = resJson[KEY_NAME] || [];
 
-            // Szukamy wiersza gracza (uwzględniając małe/wielkie litery)
             const userRow = existingRows.find(r => r.gracz && r.gracz.toLowerCase() === nick.toLowerCase());
 
             if (userRow) {
-                // Gracz istnieje -> Aktualizujemy za pomocą PUT na endpoint z unikalnym ID wiersza
                 const wrapper = {};
                 wrapper[KEY_NAME] = updateData;
 
@@ -425,7 +447,6 @@
                     body: JSON.stringify(wrapper)
                 });
             } else {
-                // Gracz nie istnieje -> Tworzymy nowy wiersz (POST)
                 updateData["gracz"] = nick;
                 const wrapper = {};
                 wrapper[KEY_NAME] = updateData;
@@ -492,7 +513,6 @@
                 let rowHtml = `<td style="font-weight:bold; color:#01c38d; position:sticky; left:0; background:#131927; z-index:1;">${row.gracz}</td>`;
                 
                 allMatches.forEach(m => {
-                    // Sheety przetwarza nazwy kolumn z małej litery
                     const matchKey = m.id.toLowerCase();
                     rowHtml += `<td>${row[matchKey] || '-'}</td>`;
                 });
