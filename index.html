@@ -77,7 +77,7 @@
 </div>
 
 <script>
-    // ⚠️ TUTAJ WKLEJ SWÓJ LINK Z SHEETDB
+    // ⚠️ TUTAJ WKLEJ SWÓJ LINK Z SHEETDB (ZAMIEŃ PONIŻSZY TEKST NA SWÓJ URL)
     const API_URL = "https://sheetdb.io/api/v1/p2i6amtlbbdei"; 
 
     const groupsOrder = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
@@ -162,7 +162,7 @@
         { id: "Mecz64", group: "K", t1: "🇨🇴 Kolumbia", t2: "🇨🇩 DR Kongo", lock: "2026-06-24T04:00:00" },
         { id: "Mecz65", group: "K", t1: "🇨🇴 Kolumbia", t2: "🇵🇹 Portugalia", lock: "2026-06-28T01:30:00" },
         { id: "Mecz66", group: "K", t1: "🇨🇩 DR Kongo", t2: "🇺🇿 Uzbekistan", lock: "2026-06-28T01:30:00" },
-        // GRUPA L - POPRAWIONE FLAGI ANGLII ZAMIAST PIRACKICH
+        // GRUPA L
         { id: "Mecz67", group: "L", t1: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglia", t2: "🇭🇷 Chorwacja", lock: "2026-06-17T22:00:00" },
         { id: "Mecz68", group: "L", t1: "🇬🇭 Ghana", t2: "🇵🇦 Panama", lock: "2026-06-18T01:00:00" },
         { id: "Mecz69", group: "L", t1: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglia", t2: "🇬🇭 Ghana", lock: "2026-06-23T22:00:00" },
@@ -171,6 +171,7 @@
         { id: "Mecz72", group: "L", t1: "🇭🇷 Chorwacja", t2: "🇬🇭 Ghana", lock: "2026-06-27T23:00:00" }
     ];
 
+    // Zupełnie nowy, bezpieczny system wycinania emoji (zapobiega krzakom )
     function extractFlag(teamString) {
         if (!teamString) return "";
         const match = teamString.match(/^([\uD83C,\uD83D,\uD83E,\u2000-\u3000\u200d\u2600-\u27BF]+)/);
@@ -184,6 +185,8 @@
     }
 
     window.onload = function() {
+        // Czyścimy błędne stare stany z localStorage przy wejściu
+        localStorage.removeItem('cachedMatches');
         const savedNick = localStorage.getItem('typerNick');
         if (savedNick) { showApp(savedNick); }
     };
@@ -200,11 +203,9 @@
         document.getElementById('app-screen').classList.remove('hidden');
         document.getElementById('user-display').innerText = nick;
         
-        // Najpierw bezpiecznie generujemy strukturę grup i mecze
         renderProgressBar();
         renderActiveGroup();
         
-        // Tabelę ładujemy w tle, żeby ewentualny błąd serwera nie zamroził typera
         setTimeout(() => { loadAllScores(); }, 200);
     }
 
