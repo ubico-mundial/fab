@@ -207,33 +207,43 @@
         if (savedNick) { showApp(savedNick); }
     };
 
-    async function saveNick() {
-        const nickInput = document.getElementById('nick-input');
-        const loginBtn = document.getElementById('login-btn');
-        const nick = nickInput.value.trim();
+  async function saveNick() {
+    const nickInput = document.getElementById('nick-input');
+    const loginBtn = document.getElementById('login-btn');
+    const nick = nickInput.value.trim();
+    
+    if (nick.length < 3) return alert('Nick musi mieć min. 3 znaki!');
+
+    loginBtn.disabled = true;
+    loginBtn.innerText = "Logowanie...";
+
+    try {
+        // Sprawdzamy czy gracz istnieje bez względu na wielkość liter
+        const resCheck = await fetch(`${API_URL}`);
+        const allPlayers = await resCheck.json();
         
-        if (nick.length < 3) return alert('Nick musi mieć min. 3 znaki!');
-
-        loginBtn.disabled = true;
-        loginBtn.innerText = "Sprawdzanie nicku...";
-
-        try {
-            const resCheck = await fetch(`${API_URL}/search?Gracz=${nick}`);
-            const existing = await resCheck.json();
-
-            if (existing.length > 0) {
-                alert('❌ Ten nick jest już zajęty przez innego gracza! Wybierz inny lub dopisz np. cyfrę.');
-                loginBtn.disabled = false;
-                loginBtn.innerText = "Rozpocznij typowanie";
-            } else {
-                localStorage.setItem('typerNick', nick);
-                showApp(nick);
-            }
-        } catch (error) {
-            alert('Błąd połączenia z bazą danych podczas weryfikacji nicku. Spróbuj ponownie.');
-            loginBtn.disabled = false;
-            loginBtn.innerText = "Rozpocznij typowanie";
+        let playerExists = false;
+        if (Array.isArray(allPlayers)) {
+            playerExists = allPlayers.some(p => p.Gracz && p.Gracz.toLowerCase() === nick.toLowerCase());
         }
+
+        if (playerExists) {
+            // Jeśli istnieje, po prostu go logujemy i wczytujemy jego stan
+            alert(`Witaj ponownie, ${nick}! Wczytuję Twoje typy...`);
+            localStorage.setItem('typerNick', nick);
+            showApp(nick);
+        } else {
+            // Jeśli to nowy gracz, rejestrujemy go i wchodzimy
+            localStorage.setItem('typerNick', nick);
+            showApp(nick);
+        }
+    } catch (error) {
+        alert('Problem z połączeniem. Spróbuj wpisać nick jeszcze raz.');
+    } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerText = "Rozpocznij typowanie";
+    }
+}
     }
 
     function showApp(nick) {
