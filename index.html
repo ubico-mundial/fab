@@ -39,10 +39,10 @@
         th { color: var(--primary); background: #1a2238; font-weight: 600; vertical-align: middle; }
         .th-match-header { font-size: 11px; font-weight: bold; color: white; white-space: nowrap; min-width: 90px; text-align: center; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 4px; }
         
-        /* POPRAWIONA SIATKA GRUP (3 RZĘDY PO 4 PRZYCISKI) */
+        /* Elastyczna nawigacja grup */
         .progress-bar { 
             display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
+            grid-template-columns: repeat(4, 1fr); /* Domyślnie na telefonie: 4 kolumny (3 rzędy) */
             gap: 6px; 
             background: #1a2238; 
             padding: 8px; 
@@ -64,8 +64,16 @@
         .progress-step:hover { background: #2a3558; color: white; }
         .progress-step.active { color: var(--bg); background: var(--primary); }
 
-        /* Media query dla komputerów / większych ekranów */
-        @media (min-width: 768px) {
+        /* Automatyczna poprawka dla ekranów komputerów (Szerokość od 500px w górę) */
+        @media (min-width: 500px) {
+            .progress-bar {
+                grid-template-columns: repeat(12, 1fr); /* Na komputerze wskakuje w 1 linię (12 kolumn) */
+                gap: 4px;
+            }
+            .progress-step {
+                padding: 6px 0;
+                font-size: 12px;
+            }
             .logo-container img { max-width: 240px; }
         }
     </style>
@@ -120,7 +128,6 @@
     let currentGroupIndex = 0; 
     let localDraftScores = {};
 
-    // Słownik generujący flagi dynamicznie
     const teamFlags = {
         "Meksyk": "🇲🇽", "RPA": "🇿🇦", "Korea Płd.": "🇰🇷", "Czechy": "🇨🇿",
         "Kanada": "🇨🇦", "Bośnia i Herc.": "🇧🇦", "Katar": "🇶🇦", "Szwajcaria": "🇨🇭",
@@ -223,7 +230,6 @@
         { id: "Mecz72", group: "L", t1: "Chorwacja", t2: "Ghana", lock: "2026-06-27T23:00:00" }
     ];
 
-    // Funkcja generująca bezpieczny format: Flaga + 3-literowy skrót
     function getFlagAnd3LetterCode(teamName) {
         if (!teamName) return "???";
         const flag = teamFlags[teamName] || "";
@@ -255,7 +261,6 @@
         setTimeout(() => { loadAllScores(); }, 200);
     }
 
-    // Generator zmieniony na czyste litery dla zachowania idealnego układu 4x3
     function renderProgressBar() {
         const bar = document.getElementById('steps-bar');
         bar.innerHTML = "";
@@ -361,7 +366,7 @@
         let allFilled = true;
 
         rows.forEach(row => {
-            const isLocked = row.getAttribute('data-locked'] === "true";
+            const isLocked = row.getAttribute('data-locked') === "true";
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
@@ -390,7 +395,7 @@
 
         rows.forEach(row => {
             const id = row.getAttribute('data-id');
-            const isLocked = row.getAttribute('data-locked'] === "true";
+            const isLocked = row.getAttribute('data-locked') === "true";
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
