@@ -122,7 +122,13 @@
 
 <script>
     // ⚠️ TUTAJ WKLEJ SWÓJ LINK Z SHEETDB
-    const API_URL = "https://api.sheety.co/d89fef0b82f42d75d6c5dd5ccfe7a1fc/untitledSpreadsheet/sheet1"; 
+   let url = 'https://api.sheety.co/d89fef0b82f42d75d6c5dd5ccfe7a1fc/untitledSpreadsheet/sheet1';
+fetch(url)
+.then((response) => response.json())
+.then(json => {
+  // Do something with the data
+  console.log(json.sheet1S);
+});
 
     const groupsOrder = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let currentGroupIndex = 0; 
