@@ -120,82 +120,10 @@
     </div>
 </div>
 
-// Zastąp ten URL swoim własnym linkiem z panelu Sheety.co
-// Pamiętaj, aby na końcu była nazwa Twojej karty (np. /arkusz1 lub /users)
-const SHEETY_URL = "https://api.sheety.co/d89fef0b82f42d75d6c5dd5ccfe7a1fc/untitledSpreadsheet/sheet1";
-
-// Pomocnicza nazwa obiektu (Sheety wymaga, aby klucz w POST/PUT miał nazwę karty)
-const KEY_NAME = "arkusz1"; 
-
-
-// 1. POBIERANIE WSZYSTKICH DANYCH (GET)
-function pobierzDane() {
-  fetch(SHEETY_URL)
-    .then(response => response.json())
-    .then(data => {
-      // Sheety zwraca dane wewnątrz obiektu o nazwie karty
-      const wiersze = data[KEY_NAME];
-      console.log("Pobrane dane:", wiersze);
-      
-      // Tutaj widzisz strukturę danych. Każdy obiekt ma pole "id" (np. wiersz.id)
-    })
-    .catch(error => console.error("Błąd pobierania:", error));
-}
-
-
-// 2. DODAWANIE NOWEGO WIERSZA (POST)
-function dodajWiersz(imie, wiek) {
-  const nowyObiekt = {};
-  nowyObiekt[KEY_NAME] = {
-    "imie": imie,  // Pamiętaj: małe litery w nazwach kolumn!
-    "wiek": wiek
-  };
-
-  fetch(SHEETY_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(nowyObiekt)
-  })
-  .then(response => response.json())
-  .then(data => console.log("Dodano pomyślnie:", data))
-  .catch(error => console.error("Błąd dodawania:", error));
-}
-
-
-// 3. EDYCJA / AKTUALIZACJA WIERSZA (PUT)
-// Musisz znać ID wiersza, który chcesz edytować (Sheety przydziela je automatycznie, np. 2, 3, 4...)
-function edytujWiersz(idWiersza, noweImie, nowyWiek) {
-  const zaktualizowanyObiekt = {};
-  zaktualizowanyObiekt[KEY_NAME] = {
-    "imie": noweImie,
-    "wiek": nowyWiek
-  };
-
-  // Do adresu URL dopisujemy id wiersza, np. .../arkusz1/2
-  fetch(`${SHEETY_URL}/${idWiersza}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(zaktualizowanyObiekt)
-  })
-  .then(response => response.json())
-  .then(data => console.log(`Wiersz o ID ${idWiersza} został zaktualizowany:`, data))
-  .catch(error => console.error("Błąd edycji:", error));
-}
-
-
-// 4. USUWANIE WIERSZA (DELETE)
-function usunWiersz(idWiersza) {
-  // Podobnie jak przy PUT, wskazujemy konkretne ID na końcu adresu URL
-  fetch(`${SHEETY_URL}/${idWiersza}`, {
-    method: "DELETE"
-  })
-  .then(response => {
-    if (response.ok) {
-      console.log(`Wiersz o ID ${idWiersza} został usunięty.`);
-    }
-  })
-  .catch(error => console.error("Błąd usuwania:", error));
-}
+<script>
+    // Panel konfiguracyjny Sheety.co
+    const API_URL = "https://api.sheety.co/d89fef0b82f42d75d6c5dd5ccfe7a1fc/untitledSpreadsheet/sheet1";
+    const KEY_NAME = "sheet1"; // Nazwa Twojej zakładki w Sheety (z małej litery)
 
     const groupsOrder = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let currentGroupIndex = 0; 
@@ -464,34 +392,48 @@ function usunWiersz(idWiersza) {
         saveCurrentInputsToDraft();
         const nick = localStorage.getItem('typerNick');
         const rows = document.querySelectorAll('.match-row');
+        
+        // Zgodnie z Sheety, identyfikatory kolumn muszą być wysyłane z małej litery
         const updateData = {};
-
         rows.forEach(row => {
             const id = row.getAttribute('data-id');
             const isLocked = row.getAttribute('data-locked') === "true";
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
-                updateData[id] = `${home}:${away}`;
+                updateData[id.toLowerCase()] = `${home}:${away}`;
             }
         });
 
         try {
-            const resCheck = await fetch(`${API_URL}/search?Gracz=${nick}`);
-            const existing = await resCheck.json();
+            // Pobieramy całą listę z Sheety, aby ręcznie przefiltrować rekordy gracza
+            const resCheck = await fetch(API_URL);
+            const resJson = await resCheck.json();
+            const existingRows = resJson[KEY_NAME] || [];
 
-            if (existing.length > 0) {
-                await fetch(`${API_URL}/Gracz/${nick}`, {
-                    method: 'PATCH',
+            // Szukamy wiersza gracza (uwzględniając małe/wielkie litery)
+            const userRow = existingRows.find(r => r.gracz && r.gracz.toLowerCase() === nick.toLowerCase());
+
+            if (userRow) {
+                // Gracz istnieje -> Aktualizujemy za pomocą PUT na endpoint z unikalnym ID wiersza
+                const wrapper = {};
+                wrapper[KEY_NAME] = updateData;
+
+                await fetch(`${API_URL}/${userRow.id}`, {
+                    method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: updateData })
+                    body: JSON.stringify(wrapper)
                 });
             } else {
-                updateData["Gracz"] = nick;
+                // Gracz nie istnieje -> Tworzymy nowy wiersz (POST)
+                updateData["gracz"] = nick;
+                const wrapper = {};
+                wrapper[KEY_NAME] = updateData;
+
                 await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: [updateData] })
+                    body: JSON.stringify(wrapper)
                 });
             }
 
@@ -507,7 +449,8 @@ function usunWiersz(idWiersza) {
                 loadAllScores();
             }
         } catch (error) {
-            alert('Błąd połączenia z bazą danych SheetDB. Spróbuj ponownie.');
+            console.error(error);
+            alert('Błąd połączenia z bazą danych Sheety.co. Upewnij się, że włączyłeś obsługę PUT w panelu.');
         }
     }
 
@@ -518,6 +461,7 @@ function usunWiersz(idWiersza) {
         try {
             const response = await fetch(API_URL);
             const data = await response.json();
+            const existingRows = data[KEY_NAME] || [];
             
             thead.innerHTML = "";
             const trHead = document.createElement('tr');
@@ -537,23 +481,26 @@ function usunWiersz(idWiersza) {
             thead.appendChild(trHead);
 
             tbody.innerHTML = "";
-            if (!Array.isArray(data) || data.length === 0) {
+            if (!Array.isArray(existingRows) || existingRows.length === 0) {
                 tbody.innerHTML = "<tr><td colspan='73'>Brak wpisów w bazie danych. Bądź pierwszy!</td></tr>";
                 return;
             }
 
-            data.forEach(row => {
-                if (!row.Gracz) return;
+            existingRows.forEach(row => {
+                if (!row.gracz) return;
                 const tr = document.createElement('tr');
-                let rowHtml = `<td style="font-weight:bold; color:#01c38d; position:sticky; left:0; background:#131927; z-index:1;">${row.Gracz}</td>`;
+                let rowHtml = `<td style="font-weight:bold; color:#01c38d; position:sticky; left:0; background:#131927; z-index:1;">${row.gracz}</td>`;
                 
                 allMatches.forEach(m => {
-                    rowHtml += `<td>${row[m.id] || '-'}</td>`;
+                    // Sheety przetwarza nazwy kolumn z małej litery
+                    const matchKey = m.id.toLowerCase();
+                    rowHtml += `<td>${row[matchKey] || '-'}</td>`;
                 });
                 tr.innerHTML = rowHtml;
                 tbody.appendChild(tr);
             });
         } catch (error) {
+            console.error(error);
             tbody.innerHTML = "<tr><td colspan='73'>Oczekiwanie na pierwsze zapisy w bazie lub błąd połączenia...</td></tr>";
         }
     }
