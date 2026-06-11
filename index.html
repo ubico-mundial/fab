@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundial UBICO 2026</title>
+    <title>Oficjalny Mundial UBICO 2026</title>
     <style>
         :root { --primary: #01c38d; --bg: #131927; --card: #1e2640; --text: #ffffff; --danger: #ff4a4a; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .container { max-width: 600px; width: 100%; }
-        h1, h2 { text-align: center; color: var(--primary); margin-bottom: 5px; }
+        .container { max-width: 600px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        
+        /* Styl dla logo ekipy */
+        .logo-container { width: 100%; text-align: center; margin-bottom: 10px; margin-top: 10px; }
+        .app-logo { max-width: 150px; height: auto; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); object-fit: contain; }
+        
+        h1, h2 { text-align: center; color: var(--primary); margin-bottom: 5px; width: 100%; }
         .group-header-active { background: #1a2238; color: var(--primary); font-weight: bold; padding: 12px; border-radius: 6px; margin: 15px 0; text-align: center; font-size: 18px; border: 2px solid var(--primary); }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; width: 100%; box-sizing: border-box; }
         input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: none; box-sizing: border-box; }
         input[type="text"] { background: #2a3558; color: white; font-size: 16px; }
         button { background: var(--primary); color: var(--bg); font-weight: bold; cursor: pointer; font-size: 16px; }
@@ -39,12 +44,17 @@
 <body>
 
 <div class="container">
+    
+    <div class="logo-container">
+        <img src="https://i.ibb.co/5WQ8dMvg/ubico.jpg" alt="UBICO" class="app-logo">
+    </div>
+
     <h1>🏆 MUNDIAL UBICO 2026 ⚽</h1>
 
     <div id="login-screen" class="card">
         <h2>Wpisz swój Nick, aby wejść:</h2>
         <input type="text" id="nick-input" placeholder="np. Fabby...">
-        <button onclick="saveNick()">Rozpocznij typowanie</button>
+        <button id="login-btn" onclick="saveNick()">Rozpocznij typowanie</button>
     </div>
 
     <div id="app-screen" class="hidden">
@@ -82,11 +92,10 @@
     let currentGroupIndex = 0; 
     let localDraftScores = {};
 
-    // Słownik generujący flagi dynamicznie – dzięki temu edytor kodu nie zgłasza błędów Unicode
     const teamFlags = {
         "Meksyk": "🇲🇽", "RPA": "🇿🇦", "Korea Płd.": "🇰🇷", "Czechy": "🇨🇿",
         "Kanada": "🇨🇦", "Bośnia i Herc.": "🇧🇦", "Katar": "🇶🇦", "Szwajcaria": "🇨🇭",
-        "Brazylia": "🇧🇷", "Maroko": "🇲🇦", "Haiti": "🇭🇹", "Szkocja": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+        "Brazylia": "🇧🇷", "Maroko": "🇲🇦", "Haiti": "🇭🇹", "Szkocja": "🏴󠁧󠁢󠁳校",
         "USA": "🇺🇸", "Paragwaj": "🇵🇾", "Australia": "🇦🇺", "Turcja": "🇹🇷",
         "Niemcy": "🇩🇪", "Curacao": "🇨🇼", "WKS": "🇨🇮", "Ekwador": "🇪🇨",
         "Holandia": "🇳🇱", "Japonia": "🇯🇵", "Szwecja": "🇸🇪", "Tunezja": "🇹🇳",
@@ -167,7 +176,7 @@
         { id: "Mecz56", group: "J", t1: "Austria", t2: "Jordania", lock: "2026-06-17T06:00:00" },
         { id: "Mecz57", group: "J", t1: "Argentyna", t2: "Austria", lock: "2026-06-22T19:00:00" },
         { id: "Mecz58", group: "J", t1: "Jordania", t2: "Algieria", lock: "2026-06-23T05:00:00" },
-        { id: "Mecz59", group: "J", t1: "Algieria", t2: "Austria", lock: "2026-06-28T04:00:00" },
+        { id: "Mecz59", group: "J", t1: "Algieria", t2: "Austria", lock: "2026-08-28T04:00:00" },
         { id: "Mecz60", group: "J", t1: "Jordania", t2: "Argentyna", lock: "2026-06-28T04:00:00" },
         // GRUPA K
         { id: "Mecz61", group: "K", t1: "Portugalia", t2: "DR Kongo", lock: "2026-06-17T19:00:00" },
@@ -185,7 +194,6 @@
         { id: "Mecz72", group: "L", t1: "Chorwacja", t2: "Ghana", lock: "2026-06-27T23:00:00" }
     ];
 
-    // Funkcja generująca bezpieczny format: Flaga + 3-literowy skrót
     function getFlagAnd3LetterCode(teamName) {
         if (!teamName) return "???";
         const flag = teamFlags[teamName] || "";
@@ -199,11 +207,33 @@
         if (savedNick) { showApp(savedNick); }
     };
 
-    function saveNick() {
-        const nick = document.getElementById('nick-input').value.trim();
+    async function saveNick() {
+        const nickInput = document.getElementById('nick-input');
+        const loginBtn = document.getElementById('login-btn');
+        const nick = nickInput.value.trim();
+        
         if (nick.length < 3) return alert('Nick musi mieć min. 3 znaki!');
-        localStorage.setItem('typerNick', nick);
-        showApp(nick);
+
+        loginBtn.disabled = true;
+        loginBtn.innerText = "Sprawdzanie nicku...";
+
+        try {
+            const resCheck = await fetch(`${API_URL}/search?Gracz=${nick}`);
+            const existing = await resCheck.json();
+
+            if (existing.length > 0) {
+                alert('❌ Ten nick jest już zajęty przez innego gracza! Wybierz inny lub dopisz np. cyfrę.');
+                loginBtn.disabled = false;
+                loginBtn.innerText = "Rozpocznij typowanie";
+            } else {
+                localStorage.setItem('typerNick', nick);
+                showApp(nick);
+            }
+        } catch (error) {
+            alert('Błąd połączenia z bazą danych podczas weryfikacji nicku. Spróbuj ponownie.');
+            loginBtn.disabled = false;
+            loginBtn.innerText = "Rozpocznij typowanie";
+        }
     }
 
     function showApp(nick) {
@@ -322,7 +352,7 @@
         let allFilled = true;
 
         rows.forEach(row => {
-            const isLocked = row.getAttribute('data-locked') === "true";
+            const isLocked = row.getAttribute('data-locked'] === "true";
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
