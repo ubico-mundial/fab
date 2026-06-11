@@ -120,15 +120,82 @@
     </div>
 </div>
 
-<script>
-    // ⚠️ TUTAJ WKLEJ SWÓJ LINK Z SHEETDB
-   let url = 'https://api.sheety.co/d89fef0b82f42d75d6c5dd5ccfe7a1fc/untitledSpreadsheet/sheet1';
-fetch(url)
-.then((response) => response.json())
-.then(json => {
-  // Do something with the data
-  console.log(json.sheet1S);
-});
+// Zastąp ten URL swoim własnym linkiem z panelu Sheety.co
+// Pamiętaj, aby na końcu była nazwa Twojej karty (np. /arkusz1 lub /users)
+const SHEETY_URL = "https://api.sheety.co/d89fef0b82f42d75d6c5dd5ccfe7a1fc/untitledSpreadsheet/sheet1";
+
+// Pomocnicza nazwa obiektu (Sheety wymaga, aby klucz w POST/PUT miał nazwę karty)
+const KEY_NAME = "arkusz1"; 
+
+
+// 1. POBIERANIE WSZYSTKICH DANYCH (GET)
+function pobierzDane() {
+  fetch(SHEETY_URL)
+    .then(response => response.json())
+    .then(data => {
+      // Sheety zwraca dane wewnątrz obiektu o nazwie karty
+      const wiersze = data[KEY_NAME];
+      console.log("Pobrane dane:", wiersze);
+      
+      // Tutaj widzisz strukturę danych. Każdy obiekt ma pole "id" (np. wiersz.id)
+    })
+    .catch(error => console.error("Błąd pobierania:", error));
+}
+
+
+// 2. DODAWANIE NOWEGO WIERSZA (POST)
+function dodajWiersz(imie, wiek) {
+  const nowyObiekt = {};
+  nowyObiekt[KEY_NAME] = {
+    "imie": imie,  // Pamiętaj: małe litery w nazwach kolumn!
+    "wiek": wiek
+  };
+
+  fetch(SHEETY_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(nowyObiekt)
+  })
+  .then(response => response.json())
+  .then(data => console.log("Dodano pomyślnie:", data))
+  .catch(error => console.error("Błąd dodawania:", error));
+}
+
+
+// 3. EDYCJA / AKTUALIZACJA WIERSZA (PUT)
+// Musisz znać ID wiersza, który chcesz edytować (Sheety przydziela je automatycznie, np. 2, 3, 4...)
+function edytujWiersz(idWiersza, noweImie, nowyWiek) {
+  const zaktualizowanyObiekt = {};
+  zaktualizowanyObiekt[KEY_NAME] = {
+    "imie": noweImie,
+    "wiek": nowyWiek
+  };
+
+  // Do adresu URL dopisujemy id wiersza, np. .../arkusz1/2
+  fetch(`${SHEETY_URL}/${idWiersza}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(zaktualizowanyObiekt)
+  })
+  .then(response => response.json())
+  .then(data => console.log(`Wiersz o ID ${idWiersza} został zaktualizowany:`, data))
+  .catch(error => console.error("Błąd edycji:", error));
+}
+
+
+// 4. USUWANIE WIERSZA (DELETE)
+function usunWiersz(idWiersza) {
+  // Podobnie jak przy PUT, wskazujemy konkretne ID na końcu adresu URL
+  fetch(`${SHEETY_URL}/${idWiersza}`, {
+    method: "DELETE"
+  })
+  .then(response => {
+    if (response.ok) {
+      console.log(`Wiersz o ID ${idWiersza} został usunięty.`);
+    }
+  })
+  .catch(error => console.error("Błąd usuwania:", error));
+}
 
     const groupsOrder = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let currentGroupIndex = 0; 
