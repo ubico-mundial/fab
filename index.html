@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundial UBICO 2026</title>
+    <title>Mundial Ubico 2026</title>
     <style>
         :root { --primary: #01c38d; --bg: #131927; --card: #1e2640; --text: #ffffff; --danger: #ff4a4a; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 600px; width: 100%; display: flex; flex-direction: column; align-items: center; }
         
-        /* Styl dla logo ekipy */
         .logo-container { width: 100%; text-align: center; margin-bottom: 10px; margin-top: 10px; }
         .app-logo { max-width: 150px; height: auto; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); object-fit: contain; }
         
@@ -22,6 +21,8 @@
         button:disabled { background: #4a5568; color: #a0aec0; cursor: not-allowed; box-shadow: none !important; }
         button:hover:not(:disabled) { opacity: 0.9; }
         .hidden { display: none; }
+        
+        /* LISTA MECZÓW */
         .match-row { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; padding-bottom: 8px; border-bottom: 1px solid #2a3558; }
         .match-info { display: flex; flex-direction: column; width: 65%; }
         .match-teams { font-size: 14px; font-weight: 500; }
@@ -30,12 +31,28 @@
         .score-inputs { display: flex; gap: 8px; align-items: center; }
         .score-inputs input { width: 42px; text-align: center; margin: 0; padding: 6px; background: #2a3558; color: white; border: none; border-radius: 4px; font-size: 16px; }
         .score-inputs input:disabled { background: #131927; color: #6c7a9c; cursor: not-allowed; }
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 1600px; }
-        th, td { padding: 12px 8px; text-align: center; border-bottom: 1px solid #2a3558; font-size: 12px; }
-        th { color: var(--primary); background: #1a2238; font-weight: 600; vertical-align: middle; }
-        .th-match-header { font-size: 11px; font-weight: bold; color: white; white-space: nowrap; min-width: 90px; text-align: center; letter-spacing: 0.5px; }
-        .progress-bar { display: flex; justify-content: space-between; margin-bottom: 15px; background: #1a2238; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; flex-wrap: wrap; gap: 4px; }
+        
+        /* 🔒 BEZWZGLĘDNA BLOKADA SZEROKOŚCI TABELI GLOBALNEJ */
+        .table-container { width: 100%; overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid #2a3558; -webkit-overflow-scrolling: touch; }
+        table { border-collapse: separate; border-spacing: 0; width: auto; table-layout: fixed; }
+        th, td { padding: 8px 4px; text-align: center; border-bottom: 1px solid #2a3558; border-right: 1px solid #2a3558; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box; }
+        
+        /* Sztywne i identyczne wymiary kolumn meczowych */
+        th:not(:first-child), td:not(:first-child) { min-width: 75px; width: 75px; max-width: 75px; }
+        
+        th { color: var(--primary); background: #1a2238; font-weight: 600; }
+        
+        /* Przypięty Nick z lewej strony */
+        th:first-child, td:first-child { position: sticky; left: 0; min-width: 85px; width: 85px; max-width: 85px; text-align: left; padding-left: 10px; border-right: 2px solid var(--primary); }
+        th:first-child { background: #1a2238; z-index: 4; }
+        td:first-child { background: #1e2640; font-weight: bold; color: var(--primary); z-index: 2; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* Centrowanie flag i tekstu w nagłówkach kolumn */
+        .th-match-header { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; font-size: 11px; font-weight: bold; width: 100%; overflow: hidden; }
+        .th-match-header div { display: inline-block; white-space: nowrap; max-width: 100%; overflow: hidden; }
+        .th-match-header span { color: #8a99ad; font-size: 9px; display: block; margin-top: 2px; }
+
+        .progress-bar { display: flex; justify-content: space-between; margin-bottom: 15px; background: #1a2238; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; flex-wrap: wrap; gap: 4px; width: 100%; box-sizing: border-box; }
         .progress-step { color: #6c7a9c; cursor: pointer; padding: 4px 6px; border-radius: 4px; transition: background 0.2s; }
         .progress-step:hover { background: #2a3558; color: white; }
         .progress-step.active { color: var(--bg); background: var(--primary); }
@@ -46,7 +63,7 @@
 <div class="container">
     
     <div class="logo-container">
-        <img src="https://i.ibb.co/Psxd4P4g/UBICO-MUNDIAL.jpg" alt="Logo ubc" class="app-logo">
+        <img src="https://i.ibb.co/Psxd4P4g/UBICO-MUNDIAL.jpg" alt="Logo Ekipy" class="app-logo" onerror="this.style.display='none'">
     </div>
 
     <h1>🏆 MUNDIAL UBICO 2026 ⚽</h1>
@@ -73,7 +90,7 @@
 
         <div class="card">
             <h2>📊 Wszystkie Typy Graczy (Faza Grupowa)</h2>
-            <button onclick="loadAllScores()" style="background:#2a3558; color:white; font-size:12px; padding:6px; margin-bottom:10px; width:auto;">🔄 Odśwież tabelę</button>
+            <button onclick="loadAllScores()" style="background:#2a3558; color:white; font-size:12px; padding:8px; margin-bottom:10px; width:auto; border-radius:4px;">🔄 Odśwież tabelę</button>
             <div class="table-container">
                 <table id="global-table">
                     <thead id="table-head"></thead>
@@ -85,7 +102,7 @@
 </div>
 
 <script>
-    // ⚠️ TUTAJ WKLEJ SWÓJ LINK Z SHEETDB
+    // ⚠️ ZMIEŃ TO NA SWÓJ REALNY LINK Z SHEETDB
     const API_URL = "https://sheetdb.io/api/v1/p2i6amtlbbdei"; 
 
     const groupsOrder = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
@@ -95,7 +112,7 @@
     const teamFlags = {
         "Meksyk": "🇲🇽", "RPA": "🇿🇦", "Korea Płd.": "🇰🇷", "Czechy": "🇨🇿",
         "Kanada": "🇨🇦", "Bośnia i Herc.": "🇧🇦", "Katar": "🇶🇦", "Szwajcaria": "🇨🇭",
-        "Brazylia": "🇧🇷", "Maroko": "🇲🇦", "Haiti": "🇭🇹", "Szkocja": "🏴󠁧󠁢󠁳校",
+        "Brazylia": "🇧🇷", "Maroko": "🇲🇦", "Haiti": "🇭🇹", "Szkocja": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
         "USA": "🇺🇸", "Paragwaj": "🇵🇾", "Australia": "🇦🇺", "Turcja": "🇹🇷",
         "Niemcy": "🇩🇪", "Curacao": "🇨🇼", "WKS": "🇨🇮", "Ekwador": "🇪🇨",
         "Holandia": "🇳🇱", "Japonia": "🇯🇵", "Szwecja": "🇸🇪", "Tunezja": "🇹🇳",
@@ -176,7 +193,7 @@
         { id: "Mecz56", group: "J", t1: "Austria", t2: "Jordania", lock: "2026-06-17T06:00:00" },
         { id: "Mecz57", group: "J", t1: "Argentyna", t2: "Austria", lock: "2026-06-22T19:00:00" },
         { id: "Mecz58", group: "J", t1: "Jordania", t2: "Algieria", lock: "2026-06-23T05:00:00" },
-        { id: "Mecz59", group: "J", t1: "Algieria", t2: "Austria", lock: "2026-08-28T04:00:00" },
+        { id: "Mecz59", group: "J", t1: "Algieria", t2: "Austria", lock: "2026-06-28T04:00:00" },
         { id: "Mecz60", group: "J", t1: "Jordania", t2: "Argentyna", lock: "2026-06-28T04:00:00" },
         // GRUPA K
         { id: "Mecz61", group: "K", t1: "Portugalia", t2: "DR Kongo", lock: "2026-06-17T19:00:00" },
@@ -194,15 +211,12 @@
         { id: "Mecz72", group: "L", t1: "Chorwacja", t2: "Ghana", lock: "2026-06-27T23:00:00" }
     ];
 
-    function getFlagAnd3LetterCode(teamName) {
+    function get3LetterCode(teamName) {
         if (!teamName) return "???";
-        const flag = teamFlags[teamName] || "";
-        const shortText = teamName.substring(0, 3).toUpperCase();
-        return `${flag} ${shortText}`;
+        return teamName.substring(0, 3).toUpperCase();
     }
 
     window.onload = function() {
-        localStorage.removeItem('cachedMatches');
         const savedNick = localStorage.getItem('typerNick');
         if (savedNick) { showApp(savedNick); }
     };
@@ -215,25 +229,23 @@
         if (nick.length < 3) return alert('Nick musi mieć min. 3 znaki!');
 
         loginBtn.disabled = true;
-        loginBtn.innerText = "Sprawdzanie nicku...";
+        loginBtn.innerText = "Logowanie...";
 
         try {
-            const resCheck = await fetch(`${API_URL}/search?Gracz=${nick}`);
-            const existing = await resCheck.json();
-
-            if (existing.length > 0) {
-                alert('❌ Ten nick jest już zajęty przez innego gracza! Wybierz inny lub dopisz np. cyfrę.');
-                loginBtn.disabled = false;
-                loginBtn.innerText = "Rozpocznij typowanie";
-            } else {
-                localStorage.setItem('typerNick', nick);
-                showApp(nick);
+            if(!API_URL.includes("TWÓJ_INDYWIDUALNY_KOD")) {
+                const resCheck = await fetch(`${API_URL}`);
+                const allPlayers = await resCheck.json();
+                if (Array.isArray(allPlayers)) {
+                    const playerExists = allPlayers.some(p => p.Gracz && p.Gracz.toLowerCase() === nick.toLowerCase());
+                    if (playerExists) { alert(`Witaj ponownie, ${nick}! Wczytuję Twoje typy.`); }
+                }
             }
-        } catch (error) {
-            alert('Błąd połączenia z bazą danych podczas weryfikacji nicku. Spróbuj ponownie.');
-            loginBtn.disabled = false;
-            loginBtn.innerText = "Rozpocznij typowanie";
+        } catch (e) {
+            console.log("Błąd bazy, logowanie awaryjne:", e);
         }
+
+        localStorage.setItem('typerNick', nick);
+        showApp(nick);
     }
 
     function showApp(nick) {
@@ -243,8 +255,7 @@
         
         renderProgressBar();
         renderActiveGroup();
-        
-        setTimeout(() => { loadAllScores(); }, 200);
+        loadAllScores();
     }
 
     function renderProgressBar() {
@@ -316,7 +327,7 @@
                 <div class="score-inputs">
                     <input type="number" class="home-team" id="home-${match.id}" min="0" placeholder="-" value="${savedHome}" ${isLocked ? 'disabled' : ''} oninput="handleHomeInput('${match.id}')">
                     <span>:</span>
-                    <input type="number" class="away-team" id="away-${match.id}" min="0" placeholder="-" value="${savedAway}" ${isLocked ? 'disabled' : ''} oninput="handleAwayInput('${match.id}', '${nextMatchId}')">
+                    <input type="number" class="away-team" id="away-${match.id}" min="0" placeholder="-" value="${savedAway}" ${isLocked ? 'disabled' : ''} oninput="handleAwayInput('${match.id}', ${nextMatchId ? `'${nextMatchId}'` : 'null'})">
                 </div>
             `;
             container.appendChild(div);
@@ -328,7 +339,7 @@
     function handleHomeInput(matchId) {
         const homeInput = document.getElementById(`home-${matchId}`);
         const awayInput = document.getElementById(`away-${matchId}`);
-        if (homeInput.value !== "") {
+        if (homeInput && homeInput.value !== "" && awayInput && !awayInput.disabled) {
             awayInput.focus();
         }
         saveCurrentInputsToDraft();
@@ -336,10 +347,10 @@
     }
 
     function handleAwayInput(currentMatchId, nextMatchId) {
-        const awayInput = document.getElementById(`away-${currentMatchId}`);
-        if (awayInput.value !== "" && nextMatchId) {
+        if (nextMatchId) {
+            const awayInput = document.getElementById(`away-${currentMatchId}`);
             const nextHomeInput = document.getElementById(`home-${nextMatchId}`);
-            if (nextHomeInput && !nextHomeInput.disabled) {
+            if (awayInput && awayInput.value !== "" && nextHomeInput && !nextHomeInput.disabled) {
                 nextHomeInput.focus();
             }
         }
@@ -352,13 +363,11 @@
         let allFilled = true;
 
         rows.forEach(row => {
-            const isLocked = row.getAttribute('data-locked'] === "true";
+            const isLocked = row.getAttribute('data-locked') === "true";
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
-                if (home === "" || away === "") {
-                    allFilled = false;
-                }
+                if (home === "" || away === "") { allFilled = false; }
             }
         });
 
@@ -389,6 +398,11 @@
             }
         });
 
+        if(API_URL.includes("TWÓJ_INDYWIDUALNY_KOD")) {
+            alert("Podłącz swój link z SheetDB w kodzie, aby zapisać!");
+            return;
+        }
+
         try {
             const resCheck = await fetch(`${API_URL}/search?Gracz=${nick}`);
             const existing = await resCheck.json();
@@ -409,22 +423,23 @@
             }
 
             if (currentGroupIndex < groupsOrder.length - 1) {
-                alert(`Grupa ${groupsOrder[currentGroupIndex]} zapisana pomyślnie! Idziemy dalej. 🚀`);
+                alert(`Grupa ${groupsOrder[currentGroupIndex]} zapisana! 🚀`);
                 currentGroupIndex++;
                 renderProgressBar();
                 renderActiveGroup();
                 loadAllScores();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
-                alert("Genialnie! Wszystkie grupy od A do L zostały pomyślnie obstawione i zapisane w bazie! 🎉");
+                alert("Wszystkie grupy obstawione! 🎉");
                 loadAllScores();
             }
         } catch (error) {
-            alert('Błąd połączenia z bazą danych SheetDB. Spróbuj ponownie.');
+            alert('Błąd zapisu. Spróbuj ponownie.');
         }
     }
 
     async function loadAllScores() {
+        if(API_URL.includes("TWÓJ_INDYWIDUALNY_KOD")) return;
         const thead = document.getElementById('table-head');
         const tbody = document.getElementById('table-body');
         
@@ -434,16 +449,19 @@
             
             thead.innerHTML = "";
             const trHead = document.createElement('tr');
-            trHead.innerHTML = "<th style='position:sticky; left:0; background:#1a2238; z-index:3;'>Gracz</th>";
+            trHead.innerHTML = "<th>Gracz</th>";
             
             allMatches.forEach(m => {
-                const homeFormat = getFlagAnd3LetterCode(m.t1);
-                const awayFormat = getFlagAnd3LetterCode(m.t2);
-
+                const homeFormat = get3LetterCode(m.t1);
+                const awayFormat = get3LetterCode(m.t2);
+                const f1 = teamFlags[m.t1] || "";
+                const f2 = teamFlags[m.t2] || "";
+                
                 trHead.innerHTML += `
                     <th>
                         <div class="th-match-header">
-                            ${homeFormat}-${awayFormat}
+                            <div>${f1} vs ${f2}</div>
+                            <span>${homeFormat}-${awayFormat}</span>
                         </div>
                     </th>`;
             });
@@ -451,23 +469,22 @@
 
             tbody.innerHTML = "";
             if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='73'>Brak wpisów w bazie danych. Bądź pierwszy!</td></tr>";
+                tbody.innerHTML = `<tr><td colspan="${allMatches.length + 1}">Brak wpisów w bazie. Bądź pierwszy!</td></tr>`;
                 return;
             }
 
             data.forEach(row => {
                 if (!row.Gracz) return;
                 const tr = document.createElement('tr');
-                let rowHtml = `<td style="font-weight:bold; color:#01c38d; position:sticky; left:0; background:#131927; z-index:1;">${row.Gracz}</td>`;
-                
-                allMatches.forEach(m => {
-                    rowHtml += `<td>${row[m.id] || '-'}</td>`;
+                let rowHtml = `<td>${row.Gracz}</td>`;
+                allMatches.forEach(m => { 
+                    rowHtml += `<td>${row[m.id] || '-'}</td>`; 
                 });
                 tr.innerHTML = rowHtml;
                 tbody.appendChild(tr);
             });
         } catch (error) {
-            tbody.innerHTML = "<tr><td colspan='73'>Oczekiwanie na pierwsze zapisy w bazie lub błąd połączenia...</td></tr>";
+            tbody.innerHTML = `<tr><td colspan="${allMatches.length + 1}">Błąd ładowania tabeli...</td></tr>`;
         }
     }
 </script>
