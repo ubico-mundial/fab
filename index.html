@@ -85,10 +85,6 @@
         .progress-step:hover { background: #2a3558; color: white; }
         .progress-step.active { color: var(--bg); background: var(--primary); }
 
-        .emergency-zone-style { text-align: center; margin: 10px 0; width: 100%; }
-        .emergency-btn { background: #3a4466; color: #ff4a4a; font-size: 12px; padding: 8px 15px; border-radius: 6px; display: inline-block; cursor: pointer; font-weight: bold; border: 1px solid rgba(255, 74, 74, 0.3); }
-        .emergency-btn:hover { background: #ff4a4a; color: white; }
-
         @media (min-width: 500px) {
             .progress-bar { grid-template-columns: repeat(12, 1fr); gap: 4px; }
             .progress-step { padding: 6px 0; font-size: 12px; }
@@ -101,10 +97,6 @@
 <div class="container">
     <div class="logo-container">
         <img src="https://i.ibb.co/Psxd4P4g/UBICO-MUNDIAL.jpg" alt="Logo Typera">
-    </div>
-
-    <div class="emergency-zone-style">
-        <span class="emergency-btn" onclick="forceResetSubmittedFlags()">⚠️ Resetuj blokady grup w przeglądarce</span>
     </div>
 
     <h1>🏆 UBICO MUNDIAL 2026 ⚽</h1>
@@ -197,9 +189,9 @@
 
     const allMatches = [
         // 11 CZERWCA
-        { id: "Mecz1", group: "A", t1: "Meksyk", t2: "RPA", lock: "2026-06-11T21:00:00", score: "2:1" },
+        { id: "Mecz1", group: "A", t1: "Meksyk", t2: "RPA", lock: "2026-06-11T21:00:00", score: "2:0" },
         // 12 CZERWCA
-        { id: "Mecz2", group: "A", t1: "Korea Płd.", t2: "Czechy", lock: "2026-06-12T04:00:00", score: "1:1" },
+        { id: "Mecz2", group: "A", t1: "Korea Płd.", t2: "Czechy", lock: "2026-06-12T04:00:00", score: "2:1" },
         { id: "Mecz7", group: "B", t1: "Kanada", t2: "Bośnia i Herc.", lock: "2026-06-12T21:00:00", score: "" },
         { id: "Mecz19", group: "D", t1: "USA", t2: "Paragwaj", lock: "2026-06-13T03:00:00", score: "" },
         // 13 CZERWCA
@@ -305,27 +297,13 @@
         return localStorage.getItem(`submitted_group_${groupLetter.toLowerCase()}_${nick.toLowerCase()}`) === "true";
     }
 
-    function forceResetSubmittedFlags() {
-        const nick = localStorage.getItem('typerNick') || "";
-        if (confirm("Czy chcesz usunąć lokalne blokady grup? Pozwoli to ponownie wysłać mecze w przypadku błędu.")) {
-            groupsOrder.forEach(g => {
-                if(nick) localStorage.removeItem(`submitted_group_${g.toLowerCase()}_${nick.toLowerCase()}`);
-            });
-            alert("Blokady wyczyszczone!");
-            if(nick) showApp(nick);
-        }
-    }
-
-    // BEZPIECZNA FUNKCJA INICJACJI - NIE ZAWIESZA STRONY PRZY BŁĘDZIE SIECI
     async function initApp() {
-        // Spróbuj pobrać dane z tabeli, ale jeśli się wywali - nie blokuj skryptu!
         try {
             await loadAllScores(); 
         } catch (e) {
             console.error("Ignorowany błąd pobierania bazy przy starcie:", e);
         }
 
-        // Ukrywamy loader w każdym przypadku i sprawdzamy logowanie
         document.getElementById('loading-screen').classList.add('hidden');
         const savedNick = localStorage.getItem('typerNick');
 
@@ -362,14 +340,25 @@
         if (!existingDatabaseRows || existingDatabaseRows.length === 0) return;
         const userRow = existingDatabaseRows.find(r => r.gracz && r.gracz.toLowerCase() === nick.toLowerCase());
         if (userRow) {
-            allMatches.forEach(m => {
-                const matchKey = m.id.toLowerCase();
-                const score = userRow[matchKey]; 
-                if (score && score.includes(":")) {
-                    const parts = score.split(":");
-                    localDraftScores[`home-${m.id}`] = parts[0].trim();
-                    localDraftScores[`away-${m.id}`] = parts[1].trim();
-                    localStorage.setItem(`submitted_group_${m.group.toLowerCase()}_${nick.toLowerCase()}`, "true");
+            // Skanujemy wszystkie grupy
+            groupsOrder.forEach(g => {
+                const groupMatches = allMatches.filter(m => m.group === g);
+                let hasAtLeastOnePrediction = false;
+
+                groupMatches.forEach(m => {
+                    const matchKey = m.id.toLowerCase();
+                    const score = userRow[matchKey]; 
+                    if (score && score.includes(":")) {
+                        const parts = score.split(":");
+                        localDraftScores[`home-${m.id}`] = parts[0].trim();
+                        localDraftScores[`away-${m.id}`] = parts[1].trim();
+                        hasAtLeastOnePrediction = true;
+                    }
+                });
+
+                // Jeśli w bazie są już wpisane typy gracza dla tej grupy, oznacz ją jako wysłaną
+                if (hasAtLeastOnePrediction) {
+                    localStorage.setItem(`submitted_group_${g.toLowerCase()}_${nick.toLowerCase()}`, "true");
                 }
             });
         }
@@ -427,6 +416,8 @@
 
         groupMatches.forEach((match, index) => {
             const lockTime = new Date(match.lock);
+            
+            // JESTEŚMY DYNAMICZNI: Mecz blokuje się automatycznie jeśli czas minął, LUB cała grupa została wysłana
             const isLocked = (now >= lockTime) || isGroupPermanentlyLocked;
 
             const div = document.createElement('div');
@@ -512,6 +503,7 @@
         let allFilled = true;
         rows.forEach(row => {
             const isLocked = row.getAttribute('data-locked') === "true";
+            // Interesują nas tylko te mecze, które są AKTYWNE (nie minął ich czas)
             if (!isLocked) {
                 const homeInput = row.querySelector('.home-team');
                 const awayInput = row.querySelector('.away-team');
@@ -528,7 +520,7 @@
                 btn.innerText = currentGroupIndex === groupsOrder.length - 1 ? "💾 Zapisz i Zakończ Typowanie!" : `💾 Zapisz i przejdź do Grupy ${groupsOrder[currentGroupIndex + 1]}`;
             } else {
                 btn.setAttribute('disabled', 'true');
-                btn.innerText = "Wpisz wszystkie wyniki tej grupy, aby przejść dalej";
+                btn.innerText = "Wpisz wszystkie otwarte wyniki tej grupy, aby przejść dalej";
             }
         }
     }
@@ -572,6 +564,7 @@
                 throw new Error(responseData.message || "Błąd wewnętrzny bazy Google Sheets");
             }
 
+            // Sukces: Zapisujemy blokadę grupy w przeglądarce
             localStorage.setItem(`submitted_group_${currentLetter.toLowerCase()}_${nick.toLowerCase()}`, "true");
 
             const indexToUpdate = existingDatabaseRows.findIndex(r => r.gracz && r.gracz.toLowerCase() === nick.toLowerCase());
