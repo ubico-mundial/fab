@@ -85,7 +85,8 @@
         .progress-step:hover { background: #2a3558; color: white; }
         .progress-step.active { color: var(--bg); background: var(--primary); }
 
-        .emergency-btn { background: #3a4466; color: #ff4a4a; font-size: 11px; padding: 5px; margin-top: 5px; border-radius: 4px; width: auto; display: inline-block; cursor: pointer; font-weight: normal; }
+        .emergency-zone-style { text-align: center; margin: 10px 0; width: 100%; }
+        .emergency-btn { background: #3a4466; color: #ff4a4a; font-size: 12px; padding: 8px 15px; border-radius: 6px; display: inline-block; cursor: pointer; font-weight: bold; border: 1px solid rgba(255, 74, 74, 0.3); }
         .emergency-btn:hover { background: #ff4a4a; color: white; }
 
         @media (min-width: 500px) {
@@ -100,9 +101,10 @@
 <div class="container">
     <div class="logo-container">
         <img src="https://i.ibb.co/Psxd4P4g/UBICO-MUNDIAL.jpg" alt="Logo Typera">
-        <div id="emergency-zone" class="hidden">
-            <span class="emergency-btn" onclick="forceResetSubmittedFlags()">⚠️ Resetuj lokalne blokady grup</span>
-        </div>
+    </div>
+
+    <div class="emergency-zone-style">
+        <span class="emergency-btn" onclick="forceResetSubmittedFlags()">⚠️ Resetuj blokady grup w przeglądarce</span>
     </div>
 
     <h1>🏆 UBICO MUNDIAL 2026 ⚽</h1>
@@ -193,12 +195,11 @@
         "Anglia": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Chorwacja": "🇭🇷", "Ghana": "🇬🇭", "Panama": "🇵🇦"
     };
 
-    // MECHANIZM CHRONOLOGICZNY - POSORTOWANY DOKŁADNIE WEDŁUG TERMINARZA TURNIEJU
     const allMatches = [
         // 11 CZERWCA
-        { id: "Mecz1", group: "A", t1: "Meksyk", t2: "RPA", lock: "2026-06-11T21:00:00", score: "2:0" },
+        { id: "Mecz1", group: "A", t1: "Meksyk", t2: "RPA", lock: "2026-06-11T21:00:00", score: "2:1" },
         // 12 CZERWCA
-        { id: "Mecz2", group: "A", t1: "Korea Płd.", t2: "Czechy", lock: "2026-06-12T04:00:00", score: "2:1" },
+        { id: "Mecz2", group: "A", t1: "Korea Płd.", t2: "Czechy", lock: "2026-06-12T04:00:00", score: "1:1" },
         { id: "Mecz7", group: "B", t1: "Kanada", t2: "Bośnia i Herc.", lock: "2026-06-12T21:00:00", score: "" },
         { id: "Mecz19", group: "D", t1: "USA", t2: "Paragwaj", lock: "2026-06-13T03:00:00", score: "" },
         // 13 CZERWCA
@@ -259,8 +260,6 @@
         { id: "Mecz64", group: "K", t1: "Kolumbia", t2: "DR Kongo", lock: "2026-06-24T04:00:00", score: "" },
         { id: "Mecz11", group: "B", t1: "Szwajcaria", t2: "Kanada", lock: "2026-06-24T21:00:00", score: "" },
         { id: "Mecz12", group: "B", t1: "Bośnia i Herc.", t2: "Katar", lock: "2026-06-24T21:00:00", score: "" },
-        
-        // KOLEJKA 3 - MECZE ROZSTRZYGAJĄCE RÓWNOLEGŁE
         // 25 CZERWCA
         { id: "Mecz18", group: "C", t1: "Maroko", t2: "Haiti", lock: "2026-06-25T00:00:00", score: "" },
         { id: "Mecz17", group: "C", t1: "Szkocja", t2: "Brazylia", lock: "2026-06-25T00:00:00", score: "" },
@@ -306,34 +305,35 @@
         return localStorage.getItem(`submitted_group_${groupLetter.toLowerCase()}_${nick.toLowerCase()}`) === "true";
     }
 
-    // AWARYJNY RESET FLAG (CZYŚCI BŁĘDNE BLOKADY)
     function forceResetSubmittedFlags() {
         const nick = localStorage.getItem('typerNick') || "";
-        if (!nick) return;
-        if (confirm("Czy na pewno chcesz zresetować blokady grup w przeglądarce? Umożliwi to ponowne wpisanie i wysłanie meczów.")) {
+        if (confirm("Czy chcesz usunąć lokalne blokady grup? Pozwoli to ponownie wysłać mecze w przypadku błędu.")) {
             groupsOrder.forEach(g => {
-                localStorage.removeItem(`submitted_group_${g.toLowerCase()}_${nick.toLowerCase()}`);
+                if(nick) localStorage.removeItem(`submitted_group_${g.toLowerCase()}_${nick.toLowerCase()}`);
             });
-            alert("Blokady usunięte! Strona za chwilę się odświeży.");
-            location.reload();
+            alert("Blokady wyczyszczone!");
+            if(nick) showApp(nick);
         }
     }
 
+    // BEZPIECZNA FUNKCJA INICJACJI - NIE ZAWIESZA STRONY PRZY BŁĘDZIE SIECI
     async function initApp() {
+        // Spróbuj pobrać dane z tabeli, ale jeśli się wywali - nie blokuj skryptu!
         try {
             await loadAllScores(); 
-            const savedNick = localStorage.getItem('typerNick');
-            document.getElementById('loading-screen').classList.add('hidden');
-
-            if (savedNick) { 
-                showApp(savedNick); 
-            } else {
-                document.getElementById('login-screen').classList.remove('hidden');
-                refreshTwemoji();
-            }
         } catch (e) {
-            console.error(e);
-            document.getElementById('loading-screen').innerHTML = "<h2>Błąd ładowania aplikacji. Odśwież stronę.</h2>";
+            console.error("Ignorowany błąd pobierania bazy przy starcie:", e);
+        }
+
+        // Ukrywamy loader w każdym przypadku i sprawdzamy logowanie
+        document.getElementById('loading-screen').classList.add('hidden');
+        const savedNick = localStorage.getItem('typerNick');
+
+        if (savedNick) { 
+            showApp(savedNick); 
+        } else {
+            document.getElementById('login-screen').classList.remove('hidden');
+            refreshTwemoji();
         }
     }
 
@@ -351,7 +351,6 @@
 
     function showApp(nick) {
         document.getElementById('app-screen').classList.remove('hidden');
-        document.getElementById('emergency-zone').classList.remove('hidden');
         document.getElementById('user-display').innerText = nick;
         
         fillLocalDraftFromDatabase(nick);
@@ -360,6 +359,7 @@
     }
 
     function fillLocalDraftFromDatabase(nick) {
+        if (!existingDatabaseRows || existingDatabaseRows.length === 0) return;
         const userRow = existingDatabaseRows.find(r => r.gracz && r.gracz.toLowerCase() === nick.toLowerCase());
         if (userRow) {
             allMatches.forEach(m => {
@@ -369,9 +369,7 @@
                     const parts = score.split(":");
                     localDraftScores[`home-${m.id}`] = parts[0].trim();
                     localDraftScores[`away-${m.id}`] = parts[1].trim();
-                    
-                    const nickKey = localStorage.getItem('typerNick') || "";
-                    localStorage.setItem(`submitted_group_${m.group.toLowerCase()}_${nickKey.toLowerCase()}`, "true");
+                    localStorage.setItem(`submitted_group_${m.group.toLowerCase()}_${nick.toLowerCase()}`, "true");
                 }
             });
         }
@@ -406,10 +404,12 @@
             const id = row.getAttribute('data-id');
             const isLocked = row.getAttribute('data-locked') === "true";
             if (!isLocked) {
-                const home = row.querySelector('.home-team').value;
-                const away = row.querySelector('.away-team').value;
-                localDraftScores[`home-${id}`] = home;
-                localDraftScores[`away-${id}`] = away;
+                const homeInput = row.querySelector('.home-team');
+                const awayInput = row.querySelector('.away-team');
+                if(homeInput && awayInput) {
+                    localDraftScores[`home-${id}`] = homeInput.value;
+                    localDraftScores[`away-${id}`] = awayInput.value;
+                }
             }
         });
     }
@@ -423,4 +423,277 @@
         const now = new Date();
 
         const groupMatches = allMatches.filter(m => m.group === currentLetter);
+        const isGroupPermanentlyLocked = isGroupSubmittedByPlayer(currentLetter);
+
+        groupMatches.forEach((match, index) => {
+            const lockTime = new Date(match.lock);
+            const isLocked = (now >= lockTime) || isGroupPermanentlyLocked;
+
+            const div = document.createElement('div');
+            div.className = "match-row";
+            div.setAttribute('data-id', match.id);
+            div.setAttribute('data-locked', isLocked);
+            
+            const nextMatch = groupMatches[index + 1];
+            const nextMatchId = nextMatch ? nextMatch.id : null;
+
+            const savedHome = localDraftScores[`home-${match.id}`] || "";
+            const savedAway = localDraftScores[`away-${match.id}`] || "";
+
+            const f1 = teamFlags[match.t1] || "";
+            const f2 = teamFlags[match.t2] || "";
+
+            let officialResultText = "";
+            if(match.score && match.score !== "") {
+                officialResultText = ` <b style="color:var(--primary)">[Wynik: ${match.score}]</b>`;
+            }
+
+            let statusMessage = '⏰ Start PL: ' + match.lock.replace('T', ' ');
+            if (now >= lockTime) {
+                statusMessage = '<span class="locked-text">🔒 ZABLOKOWANY (Czas minął)</span>';
+            } else if (isGroupPermanentlyLocked) {
+                statusMessage = '<span class="submitted-text">🔒 ZABLOKOWANY (Wysłano)</span>';
+            }
+
+            div.innerHTML = `
+                <div class="match-info">
+                    <span class="match-teams">${f1} ${match.t1} - ${f2} ${match.t2} ${officialResultText}</span>
+                    <span class="match-date">${statusMessage}</span>
+                </div>
+                <div class="score-inputs">
+                    <input type="number" class="home-team" id="home-${match.id}" min="0" placeholder="-" value="${savedHome}" ${isLocked ? 'disabled' : ''} oninput="handleHomeInput('${match.id}')">
+                    <span>:</span>
+                    <input type="number" class="away-team" id="away-${match.id}" min="0" placeholder="-" value="${savedAway}" ${isLocked ? 'disabled' : ''} oninput="handleAwayInput('${match.id}', '${nextMatchId}')">
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        validateGroupCompletion();
+        refreshTwemoji(); 
+    }
+
+    function handleHomeInput(matchId) {
+        const homeInput = document.getElementById(`home-${matchId}`);
+        if (homeInput && homeInput.value !== "") {
+            const awayInput = document.getElementById(`away-${matchId}`);
+            if(awayInput) awayInput.focus();
+        }
+        saveCurrentInputsToDraft();
+        validateGroupCompletion();
+    }
+
+    function handleAwayInput(currentMatchId, nextMatchId) {
+        const awayInput = document.getElementById(`away-${currentMatchId}`);
+        if (awayInput && awayInput.value !== "" && nextMatchId) {
+            const nextHomeInput = document.getElementById(`home-${nextMatchId}`);
+            if (nextHomeInput && !nextHomeInput.disabled) { nextHomeInput.focus(); }
+        }
+        saveCurrentInputsToDraft();
+        validateGroupCompletion();
+    }
+
+    function validateGroupCompletion() {
+        const currentLetter = groupsOrder[currentGroupIndex];
+        const submitContainer = document.getElementById('submit-container');
+
+        if (isGroupSubmittedByPlayer(currentLetter)) {
+            submitContainer.innerHTML = `<div class="success-box">⭐ Ta grupa została już przez Ciebie zatwierdzona i zablokowana!</div>`;
+            return;
+        }
+
+        submitContainer.innerHTML = `
+            <button id="submit-btn" onclick="submitCurrentGroup()" style="margin-top: 25px; font-size: 18px; box-shadow: 0 4px 10px rgba(1, 195, 141, 0.3);" disabled>
+                Wypełnij wszystkie mecze grupy
+            </button>
+        `;
+
+        const rows = document.querySelectorAll('.match-row');
+        let allFilled = true;
+        rows.forEach(row => {
+            const isLocked = row.getAttribute('data-locked') === "true";
+            if (!isLocked) {
+                const homeInput = row.querySelector('.home-team');
+                const awayInput = row.querySelector('.away-team');
+                if (homeInput && awayInput && (homeInput.value === "" || awayInput.value === "")) {
+                    allFilled = false;
+                }
+            }
+        });
+
+        const btn = document.getElementById('submit-btn');
+        if (btn) {
+            if (allFilled) {
+                btn.removeAttribute('disabled');
+                btn.innerText = currentGroupIndex === groupsOrder.length - 1 ? "💾 Zapisz i Zakończ Typowanie!" : `💾 Zapisz i przejdź do Grupy ${groupsOrder[currentGroupIndex + 1]}`;
+            } else {
+                btn.setAttribute('disabled', 'true');
+                btn.innerText = "Wpisz wszystkie wyniki tej grupy, aby przejść dalej";
+            }
+        }
+    }
+
+    async function submitCurrentGroup() {
+        const currentLetter = groupsOrder[currentGroupIndex];
+        const nick = localStorage.getItem('typerNick');
+
+        if (isGroupSubmittedByPlayer(currentLetter)) return;
+
+        saveCurrentInputsToDraft();
+
+        const updateData = { "gracz": nick };
+        allMatches.forEach(m => {
+            const matchKey = m.id.toLowerCase();
+            const homeVal = localDraftScores[`home-${m.id}`];
+            const awayVal = localDraftScores[`away-${m.id}`];
+            if (homeVal !== undefined && awayVal !== undefined && homeVal !== "" && awayVal !== "") {
+                updateData[matchKey] = `${homeVal}:${awayVal}`;
+            } else {
+                updateData[matchKey] = ""; 
+            }
+        });
+
+        const btn = document.getElementById('submit-btn');
+
+        try {
+            if (btn) {
+                btn.setAttribute('disabled', 'true');
+                btn.innerText = "Wysyłanie do bazy...";
+            }
+
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(updateData)
+            });
+            
+            const responseData = await res.json();
+
+            if (responseData.status === "error") {
+                throw new Error(responseData.message || "Błąd wewnętrzny bazy Google Sheets");
+            }
+
+            localStorage.setItem(`submitted_group_${currentLetter.toLowerCase()}_${nick.toLowerCase()}`, "true");
+
+            const indexToUpdate = existingDatabaseRows.findIndex(r => r.gracz && r.gracz.toLowerCase() === nick.toLowerCase());
+            if(indexToUpdate !== -1) {
+                Object.assign(existingDatabaseRows[indexToUpdate], updateData);
+            } else {
+                existingDatabaseRows.push(updateData);
+            }
+
+            if (currentGroupIndex < groupsOrder.length - 1) {
+                alert(`Grupa ${groupsOrder[currentGroupIndex]} została zapisana i ZABLOKOWANA przed zmianami! 🚀`);
+                currentGroupIndex++;
+                renderProgressBar(); renderActiveGroup(); 
+                try { await loadAllScores(); } catch(e){}
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                alert("Wszystkie grupy zostały oficjalnie zapisane i zablokowane! Powodzenia! 🎉");
+                renderProgressBar(); renderActiveGroup();
+                try { await loadAllScores(); } catch(e){}
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert('❌ Błąd zapisu! Dane NIE trafiły do bazy danych. Powód: ' + error.message);
+            if (btn) btn.removeAttribute('disabled');
+            validateGroupCompletion(); 
+        }
+    }
+
+    function evaluatePrediction(playerPrediction, officialResult) {
+        if (!officialResult || officialResult === "" || !playerPrediction || playerPrediction === "-" || !playerPrediction.includes(":")) {
+            return { points: 0, cssClass: "", type: "none" }; 
+        }
+        if (playerPrediction.trim() === officialResult.trim()) {
+            return { points: 45, cssClass: "cell-exact", type: "exact" }; 
+        }
+        const [pHome, pAway] = playerPrediction.split(":").map(Number);
+        const [oHome, oAway] = officialResult.split(":").map(Number);
+        const playerTrend = pHome > pAway ? 1 : (pHome < pAway ? -1 : 0);
+        const officialTrend = oHome > oAway ? 1 : (oHome < oAway ? -1 : 0);
+        if (playerTrend === officialTrend) {
+            return { points: 30, cssClass: "cell-trend", type: "trend" }; 
+        }
+        return { points: 0, cssClass: "cell-miss", type: "miss" }; 
+    }
+
+    async function loadAllScores() {
+        const thead = document.getElementById('table-head');
+        const tbody = document.getElementById('table-body');
+        const leaderboardBody = document.getElementById('leaderboard-body');
+        
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        existingDatabaseRows = data[KEY_NAME] || [];
+        
+        thead.innerHTML = "";
+        const trHead = document.createElement('tr');
+        trHead.innerHTML = "<th style='position:sticky; left:0; background:#1a2238; z-index:3;'>Gracz</th>";
+        
+        allMatches.forEach(m => {
+            const homeFormat = getFlagAnd3LetterCode(m.t1);
+            const awayFormat = getFlagAnd3LetterCode(m.t2);
+            const resultSub = m.score ? `<br><span style="color:#01c38d; font-size:10px;">(${m.score})</span>` : '';
+            trHead.innerHTML += `
+                <th>
+                    <div class="th-match-header" style="flex-direction:column;">
+                        <div style="font-size:9px; color:#8a99ad; margin-bottom:2px;">GR. ${m.group}</div>
+                        <div>${homeFormat}-${awayFormat}</div>
+                        ${resultSub}
+                    </div>
+                </th>`;
+        });
+        thead.appendChild(trHead);
+
+        let playersLeaderboard = [];
+        tbody.innerHTML = "";
+
+        if (!Array.isArray(existingDatabaseRows) || existingDatabaseRows.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='73'>Brak wpisów w bazie danych.</td></tr>";
+            leaderboardBody.innerHTML = "<tr><td colspan='3'>Brak danych do stworzenia rankingu.</td></tr>";
+            refreshTwemoji();
+            return;
+        }
+
+        existingDatabaseRows.forEach(row => {
+            if (!row.gracz) return;
+            let totalPoints = 0, countExact = 0, countTrend = 0;
+            const tr = document.createElement('tr');
+            let rowHtml = `<td style="font-weight:bold; color:#01c38d; position:sticky; left:0; background:#131927; z-index:1;">${row.gracz}</td>`;
+            
+            allMatches.forEach(m => {
+                const matchKey = m.id.toLowerCase();
+                const playerPrediction = row[matchKey] || '-';
+                const evaluation = evaluatePrediction(playerPrediction, m.score);
+                totalPoints += evaluation.points;
+                if (evaluation.type === "exact") countExact++;
+                if (evaluation.type === "trend") countTrend++;
+                rowHtml += `<td class="${evaluation.cssClass}">${playerPrediction}</td>`;
+            });
+            
+            tr.innerHTML = rowHtml;
+            tbody.appendChild(tr);
+            playersLeaderboard.push({ name: row.gracz, points: totalPoints, exacts: countExact, trends: countTrend });
+        });
+
+        playersLeaderboard.sort((a, b) => b.points !== a.points ? b.points - a.points : b.exacts - a.exacts);
+        leaderboardBody.innerHTML = "";
+        playersLeaderboard.forEach((player, index) => {
+            const trRank = document.createElement('tr');
+            trRank.className = "leaderboard-row";
+            trRank.innerHTML = `
+                <td><span class="rank-badge">${index + 1}</span></td>
+                <td style="text-align: left; padding-left: 15px; font-weight: bold; color: #fff;">
+                    ${player.name} <span class="stats-span">(🟢 x${player.exacts}, 🟡 x${player.trends})</span>
+                </td>
+                <td style="font-weight: bold; color: var(--primary); font-size: 16px;">${player.points} pkt</td>
+            `;
+            leaderboardBody.appendChild(trRank);
+        });
+        refreshTwemoji(); 
+    }
+</script>
+</body>
+</html>
 
