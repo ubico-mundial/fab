@@ -130,7 +130,7 @@
         </div>
 
         <div class="card">
-            <h2>📊 Szczegółowe Typy Graczy (Chronologicznie)</h2>
+            <h2>📊 Szczegółowe Typy Graczy (Faza Grupowa)</h2>
             <button onclick="loadAllScores()" style="background:#2a3558; color:white; font-size:12px; padding:6px; margin-bottom:10px; width:auto;">🔄 Odśwież tabelę i punkty</button>
             <div class="table-container">
                 <table id="global-table">
@@ -402,7 +402,6 @@
         container.innerHTML = "";
         const now = new Date();
 
-        // Przy wpisywaniu bierzemy tylko mecze z danej grupy literowej
         const groupMatches = allMatches.filter(m => m.group === currentLetter);
         const isGroupPermanentlyLocked = isGroupSubmittedByPlayer(currentLetter);
 
@@ -516,20 +515,29 @@
         if (isGroupSubmittedByPlayer(currentLetter)) return;
 
         saveCurrentInputsToDraft();
-        const rows = document.querySelectorAll('.match-row');
-        const updateData = { gracz: nick };
 
-        rows.forEach(row => {
-            const id = row.getAttribute('data-id');
-            const isLocked = row.getAttribute('data-locked') === "true";
-            if (!isLocked) {
-                const home = row.querySelector('.home-team').value;
-                const away = row.querySelector('.away-team').value;
-                updateData[id.toLowerCase()] = `${home}:${away}`;
+        // BEZPIECZNA SYNCHRONIZACJA: Budujemy pełny obiekt stanu całego turnieju z pamięci lokalnej
+        const updateData = { gracz: nick };
+        
+        allMatches.forEach(m => {
+            const matchKey = m.id.toLowerCase();
+            const homeVal = localDraftScores[`home-${m.id}`];
+            const awayVal = localDraftScores[`away-${m.id}`];
+            
+            if (homeVal !== undefined && awayVal !== undefined && homeVal !== "" && awayVal !== "") {
+                updateData[matchKey] = `${homeVal}:${awayVal}`;
+            } else {
+                updateData[matchKey] = ""; 
             }
         });
 
         try {
+            const btn = document.getElementById('submit-btn');
+            if (btn) {
+                btn.setAttribute('disabled', 'true');
+                btn.innerText = "Wysyłanie do bazy...";
+            }
+
             const wrapper = { "sheet1": updateData };
 
             const res = await fetch(API_URL, {
@@ -559,6 +567,7 @@
         } catch (error) {
             console.error(error);
             alert('Błąd połączenia z bazą Google Apps Script.');
+            validateGroupCompletion(); 
         }
     }
 
@@ -598,7 +607,6 @@
             const trHead = document.createElement('tr');
             trHead.innerHTML = "<th style='position:sticky; left:0; background:#1a2238; z-index:3;'>Gracz</th>";
             
-            // Renderowanie kolumn w nagłówku tabeli - leci chronologicznie według allMatches
             allMatches.forEach(m => {
                 const homeFormat = getFlagAnd3LetterCode(m.t1);
                 const awayFormat = getFlagAnd3LetterCode(m.t2);
@@ -689,3 +697,4 @@
 </script>
 </body>
 </html>
+
