@@ -33,9 +33,12 @@
         .match-teams { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .match-date { font-size: 11px; color: #8a99ad; margin-top: 3px; }
         .locked-text { color: var(--danger); font-weight: bold; }
+        .submitted-text { color: var(--primary); font-weight: bold; }
         .score-inputs { display: flex; gap: 8px; align-items: center; }
         .score-inputs input { width: 42px; text-align: center; margin: 0; padding: 6px; background: #2a3558; color: white; border: none; border-radius: 4px; font-size: 16px; }
         .score-inputs input:disabled { background: #131927; color: #6c7a9c; cursor: not-allowed; }
+        
+        .success-box { background: rgba(1, 195, 141, 0.1); border: 2px dashed var(--primary); color: var(--primary); text-align: center; padding: 15px; border-radius: 8px; margin-top: 25px; font-weight: bold; font-size: 16px; }
         
         img.emoji { height: 1.2em; width: 1.2em; margin: 0 .15em; vertical-align: -0.2em; }
         
@@ -117,11 +120,13 @@
             <div class="progress-bar" id="steps-bar"></div>
 
             <div id="group-title" class="group-header-active"></div>
-            <div id="matches-list">Ładowanie meczów grupy i Twoich typów...</div>
+            <div id="matches-list">Ładowanie meczów grupy...</div>
 
-            <button id="submit-btn" onclick="submitCurrentGroup()" style="margin-top: 25px; font-size: 18px; box-shadow: 0 4px 10px rgba(1, 195, 141, 0.3);" disabled>
-                Wypełnij wszystkie mecze grupy
-            </button>
+            <div id="submit-container">
+                <button id="submit-btn" onclick="submitCurrentGroup()" style="margin-top: 25px; font-size: 18px; box-shadow: 0 4px 10px rgba(1, 195, 141, 0.3);" disabled>
+                    Wypełnij wszystkie mecze grupy
+                </button>
+            </div>
         </div>
 
         <div class="card">
@@ -281,13 +286,16 @@
         }
     }
 
+    // Pomocnicza funkcja sprawdzająca czy gracz wysłał już tę grupę
+    function isGroupSubmittedByPlayer(groupLetter) {
+        const nick = localStorage.getItem('typerNick') || "";
+        return localStorage.getItem(`submitted_group_${groupLetter.toLowerCase()}_${nick.toLowerCase()}`) === "true";
+    }
+
     async function initApp() {
         try {
             await loadAllScores(); 
-            
             const savedNick = localStorage.getItem('typerNick');
-            
-            // Ukrywamy ekran ładowania
             document.getElementById('loading-screen').classList.add('hidden');
 
             if (savedNick) { 
@@ -307,7 +315,6 @@
     function loginUser() {
         const nickInput = document.getElementById('nick-input');
         const nick = nickInput.value.trim();
-
         if (nick.length < 3) return alert('Nick musi mieć min. 3 znaki!');
 
         localStorage.setItem('typerNick', nick);
@@ -320,7 +327,6 @@
         document.getElementById('user-display').innerText = nick;
         
         fillLocalDraftFromDatabase(nick);
-
         renderProgressBar();
         renderActiveGroup();
     }
@@ -335,6 +341,10 @@
                     const parts = score.split(":");
                     localDraftScores[`home-${m.id}`] = parts[0].trim();
                     localDraftScores[`away-${m.id}`] = parts[1].trim();
+                    
+                    // Jeśli w bazie są już wpisane wyniki, traktujemy grupę jako zapisaną
+                    const nickKey = localStorage.getItem('typerNick') || "";
+                    localStorage.setItem(`submitted_group_${m.group.toLowerCase()}_${nickKey.toLowerCase()}`, "true");
                 }
             });
         }
@@ -345,8 +355,10 @@
         bar.innerHTML = "";
         groupsOrder.forEach((g, idx) => {
             const span = document.createElement('span');
+            // Jeśli grupa jest zatwierdzona, dodajemy małego ptaszka do paska postępu
+            const isDone = isGroupSubmittedByPlayer(g);
             span.className = `progress-step ${idx === currentGroupIndex ? 'active' : ''}`;
-            span.innerText = g; 
+            span.innerText = isDone ? `${g} ✓` : g; 
             span.onclick = () => changeGroup(idx);
             bar.appendChild(span);
         });
@@ -360,6 +372,10 @@
     }
 
     function saveCurrentInputsToDraft() {
+        const currentLetter = groupsOrder[currentGroupIndex];
+        // Nie nadpisujemy danych z drafu, jeśli ta grupa jest już permanentnie zablokowana
+        if (isGroupSubmittedByPlayer(currentLetter)) return;
+
         const rows = document.querySelectorAll('.match-row');
         rows.forEach(row => {
             const id = row.getAttribute('data-id');
@@ -382,10 +398,12 @@
         const now = new Date();
 
         const groupMatches = allMatches.filter(m => m.group === currentLetter);
+        const isGroupPermanentlyLocked = isGroupSubmittedByPlayer(currentLetter);
 
         groupMatches.forEach((match, index) => {
             const lockTime = new Date(match.lock);
-            const isLocked = now >= lockTime;
+            // Mecz jest zablokowany jeśli minął czas LUB jeśli grupa została już wysłana
+            const isLocked = (now >= lockTime) || isGroupPermanentlyLocked;
 
             const div = document.createElement('div');
             div.className = "match-row";
@@ -406,10 +424,17 @@
                 officialResultText = ` <b style="color:var(--primary)">[Wynik: ${match.score}]</b>`;
             }
 
+            let statusMessage = '⏰ Start PL: ' + match.lock.replace('T', ' ');
+            if (now >= lockTime) {
+                statusMessage = '<span class="locked-text">🔒 ZABLOKOWANY (Czas minął)</span>';
+            } else if (isGroupPermanentlyLocked) {
+                statusMessage = '<span class="submitted-text">🔒 ZABLOKOWANY (Wysłano)</span>';
+            }
+
             div.innerHTML = `
                 <div class="match-info">
                     <span class="match-teams">${f1} ${match.t1} - ${f2} ${match.t2} ${officialResultText}</span>
-                    <span class="match-date">${isLocked ? '<span class="locked-text">🔒 ZABLOKOWANY</span>' : '⏰ Start PL: ' + match.lock.replace('T', ' ')}</span>
+                    <span class="match-date">${statusMessage}</span>
                 </div>
                 <div class="score-inputs">
                     <input type="number" class="home-team" id="home-${match.id}" min="0" placeholder="-" value="${savedHome}" ${isLocked ? 'disabled' : ''} oninput="handleHomeInput('${match.id}')">
@@ -444,6 +469,22 @@
     }
 
     function validateGroupCompletion() {
+        const currentLetter = groupsOrder[currentGroupIndex];
+        const submitContainer = document.getElementById('submit-container');
+
+        // Jeżeli grupa została wysłana, zamiast przycisku wyświetlamy ładny boks informacyjny
+        if (isGroupSubmittedByPlayer(currentLetter)) {
+            submitContainer.innerHTML = `<div class="success-box">⭐ Ta grupa została już przez Ciebie zatwierdzona i zablokowana!</div>`;
+            return;
+        }
+
+        // Przywracamy domyślny przycisk jeśli grupa jest otwarta
+        submitContainer.innerHTML = `
+            <button id="submit-btn" onclick="submitCurrentGroup()" style="margin-top: 25px; font-size: 18px; box-shadow: 0 4px 10px rgba(1, 195, 141, 0.3);" disabled>
+                Wypełnij wszystkie mecze grupy
+            </button>
+        `;
+
         const rows = document.querySelectorAll('.match-row');
         let allFilled = true;
         rows.forEach(row => {
@@ -466,17 +507,20 @@
     }
 
     async function submitCurrentGroup() {
-        saveCurrentInputsToDraft();
+        const currentLetter = groupsOrder[currentGroupIndex];
         const nick = localStorage.getItem('typerNick');
+
+        // Na wszelki wypadek podwójne ubezpieczenie przed ponownym wysłaniem
+        if (isGroupSubmittedByPlayer(currentLetter)) return;
+
+        saveCurrentInputsToDraft();
         const rows = document.querySelectorAll('.match-row');
-        
-        const updateData = {
-            gracz: nick
-        };
+        const updateData = { gracz: nick };
 
         rows.forEach(row => {
             const id = row.getAttribute('data-id');
             const isLocked = row.getAttribute('data-locked') === "true";
+            // Wysyłamy tylko to co nie było wcześniej zablokowane czasem
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
@@ -493,6 +537,9 @@
             });
             await res.json();
 
+            // Sfinalizowanie blokady grupy w pamięci lokalnej
+            localStorage.setItem(`submitted_group_${currentLetter.toLowerCase()}_${nick.toLowerCase()}`, "true");
+
             const indexToUpdate = existingDatabaseRows.findIndex(r => r.gracz && r.gracz.toLowerCase() === nick.toLowerCase());
             if(indexToUpdate !== -1) {
                 Object.assign(existingDatabaseRows[indexToUpdate], updateData);
@@ -501,12 +548,16 @@
             }
 
             if (currentGroupIndex < groupsOrder.length - 1) {
-                alert(`Grupa ${groupsOrder[currentGroupIndex]} zapisana! 🚀`);
+                alert(`Grupa ${groupsOrder[currentGroupIndex]} została zapisana i ZABLOKOWANA przed zmianami! 🚀`);
                 currentGroupIndex++;
-                renderProgressBar(); renderActiveGroup(); loadAllScores();
+                renderProgressBar(); 
+                renderActiveGroup(); 
+                loadAllScores();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
-                alert("Wszystkie grupy zapisane pomyślnie! 🎉");
+                alert("Wszystkie grupy zostały oficjalnie zapisane i zablokowane! Powodzenia! 🎉");
+                renderProgressBar();
+                renderActiveGroup();
                 loadAllScores();
             }
         } catch (error) {
@@ -567,8 +618,8 @@
             thead.appendChild(trHead);
 
             let playersLeaderboard = [];
-
             tbody.innerHTML = "";
+
             if (!Array.isArray(existingDatabaseRows) || existingDatabaseRows.length === 0) {
                 tbody.innerHTML = "<tr><td colspan='73'>Brak wpisów w bazie danych.</td></tr>";
                 leaderboardBody.innerHTML = "<tr><td colspan='3'>Brak danych do stworzenia rankingu.</td></tr>";
@@ -611,9 +662,7 @@
             });
 
             playersLeaderboard.sort((a, b) => {
-                if (b.points !== a.points) {
-                    return b.points - a.points; 
-                }
+                if (b.points !== a.points) return b.points - a.points; 
                 return b.exacts - a.exacts; 
             });
 
