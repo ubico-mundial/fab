@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oficjalny Typer Mundial UBICO 2026</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/twemoji-amazed/twemoji-amazed.css">
+    <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@14.1.0/dist/twemoji.min.js" crossorigin="anonymous"></script>
     <style>
         :root { --primary: #01c38d; --bg: #131927; --card: #1e2640; --text: #ffffff; --danger: #ff4a4a; }
-        body { font-family: 'Twemoji Amazed', 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 600px; width: 100%; box-sizing: border-box; }
         
         .logo-container { text-align: center; margin-bottom: 10px; width: 100%; }
@@ -25,12 +25,15 @@
         
         .match-row { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; padding-bottom: 8px; border-bottom: 1px solid #2a3558; }
         .match-info { display: flex; flex-direction: column; width: 65%; }
-        .match-teams { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+        .match-teams { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .match-date { font-size: 11px; color: #8a99ad; margin-top: 3px; }
         .locked-text { color: var(--danger); font-weight: bold; }
         .score-inputs { display: flex; gap: 8px; align-items: center; }
         .score-inputs input { width: 42px; text-align: center; margin: 0; padding: 6px; background: #2a3558; color: white; border: none; border-radius: 4px; font-size: 16px; }
         .score-inputs input:disabled { background: #131927; color: #6c7a9c; cursor: not-allowed; }
+        
+        /* Styl dla flag Twemoji, żeby ładnie dopasowywały się do tekstu na PC */
+        img.emoji { height: 1.2em; width: 1.2em; margin: 0 .15em; vertical-align: -0.2em; }
         
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 1600px; }
@@ -92,7 +95,7 @@
     <h1>🏆 UBICO MUNDIAL 2026 ⚽</h1>
 
     <div id="login-screen" class="card">
-        <h2>Wpisz swój Nick, aby weść do gry:</h2>
+        <h2>Wpisz swój Nick, aby wejść do gry:</h2>
         <input type="text" id="nick-input" placeholder="np. Fabby...">
         <button id="login-btn" onclick="loginUser()">Dołącz do Typera</button>
     </div>
@@ -157,7 +160,7 @@
     const teamFlags = {
         "Meksyk": "🇲🇽", "RPA": "🇿🇦", "Korea Płd.": "🇰🇷", "Czechy": "🇨🇿",
         "Kanada": "🇨🇦", "Bośnia i Herc.": "🇧🇦", "Katar": "🇶🇦", "Szwajcaria": "🇨🇭",
-        "Brazylia": "🇧🇷", "Maroko": "🇲🇦", "Haiti": "🇭🇹", "Szkocja": "🏴󠁧󠁢󠁳κούς",
+        "Brazylia": "🇧🇷", "Maroko": "🇲🇦", "Haiti": "🇭🇹", "Szkocja": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
         "USA": "🇺🇸", "Paragwaj": "🇵🇾", "Australia": "🇦🇺", "Turcja": "🇹🇷",
         "Niemcy": "🇩🇪", "Curacao": "🇨🇼", "WKS": "🇨🇮", "Ekwador": "🇪🇨",
         "Holandia": "🇳🇱", "Japonia": "🇯🇵", "Szwecja": "🇸🇪", "Tunezja": "🇹🇳",
@@ -259,16 +262,24 @@
     function getFlagAnd3LetterCode(teamName) {
         if (!teamName) return "???";
         const flag = teamFlags[teamName] || "";
-        return `<span class="twa"></span> ${flag} ${teamName.substring(0, 3).toUpperCase()}`;
+        return `${flag} ${teamName.substring(0, 3).toUpperCase()}`;
     }
 
-    // Załaduj tabelę na starcie, a jeśli gracz jest już zalogowany w pamięci - wpuść go automatycznie
+    // Funkcja odpalająca Twemoji po zmianach w HTML, aby podmienić flagi systemowe na graficzne obrazki
+    function refreshTwemoji() {
+        if (window.twemoji) {
+            twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+        }
+    }
+
     async function initApp() {
-        await loadAllScores(); // Pobiera dane z bazy do tablicy existingDatabaseRows
+        await loadAllScores(); 
         
         const savedNick = localStorage.getItem('typerNick');
         if (savedNick) { 
             showApp(savedNick); 
+        } else {
+            refreshTwemoji();
         }
     }
 
@@ -280,7 +291,6 @@
 
         if (nick.length < 3) return alert('Nick musi mieć min. 3 znaki!');
 
-        // Zapisz na stałe w przeglądarce telefonu/komputera
         localStorage.setItem('typerNick', nick);
         showApp(nick);
     }
@@ -392,6 +402,7 @@
         });
 
         validateGroupCompletion();
+        refreshTwemoji(); // Konwertuje flagi w sekcji obstawiania
     }
 
     function handleHomeInput(matchId) {
@@ -463,7 +474,6 @@
             });
             await res.json();
 
-            // Aktualizujemy lokalną bazę podręczną po udanym zapisie
             const indexToUpdate = existingDatabaseRows.findIndex(r => r.gracz && r.gracz.toLowerCase() === nick.toLowerCase());
             if(indexToUpdate !== -1) {
                 Object.assign(existingDatabaseRows[indexToUpdate], updateData);
@@ -543,6 +553,7 @@
             if (!Array.isArray(existingDatabaseRows) || existingDatabaseRows.length === 0) {
                 tbody.innerHTML = "<tr><td colspan='73'>Brak wpisów w bazie danych.</td></tr>";
                 leaderboardBody.innerHTML = "<tr><td colspan='3'>Brak danych do stworzenia rankingu.</td></tr>";
+                refreshTwemoji();
                 return;
             }
 
@@ -601,6 +612,8 @@
                 `;
                 leaderboardBody.appendChild(trRank);
             });
+
+            refreshTwemoji(); // Konwertuje flagi w nagłówkach dużej tabeli na PC
 
         } catch (error) {
             console.error(error);
