@@ -130,7 +130,7 @@
         </div>
 
         <div class="card">
-            <h2>📊 Szczegółowe Typy Graczy (Faza Grupowa)</h2>
+            <h2>📊 Szczegółowe Typy Graczy (Chronologicznie)</h2>
             <button onclick="loadAllScores()" style="background:#2a3558; color:white; font-size:12px; padding:6px; margin-bottom:10px; width:auto;">🔄 Odśwież tabelę i punkty</button>
             <div class="table-container">
                 <table id="global-table">
@@ -163,7 +163,7 @@
 <script>
     // =========================================================
     // ⚠️ TUTAJ WKLEJ SWÓJ LINK Z GOOGLE APPS SCRIPT:
-    const API_URL = "https://script.google.com/macros/s/AKfycbwITEYeeJMhwBvCygn9f75aGAmkIfRL8XJV7erXPZYOj84GDMBXgWHLvut7rNXIBag4hA/exec";
+    const API_URL = "TUTAJ_WKLEJ_TWÓJ_LINK_Z_APPS_SCRIPT";
     const KEY_NAME = "sheet1"; 
     // =========================================================
 
@@ -173,105 +173,114 @@
     let existingDatabaseRows = [];
 
     const teamFlags = {
-        "Meksyk": "🇲🇽", "RPA": "🇿🇦", "Korea Płd.": "🇰🇷", "Czechy": "🇨🇿",
-        "Kanada": "🇨🇦", "Bośnia i Herc.": "🇧🇦", "Katar": "🇶🇦", "Szwajcaria": "🇨🇭",
-        "Brazylia": "🇧🇷", "Maroko": "🇲🇦", "Haiti": "🇭🇹", "Szkocja": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+        "Meksyk": "🇲🇽", "RPA": "🇿🇦", "Korea Płd.": "🇰🇷", "Czechy": "🇨🇿", "Korea Południowa": "🇰🇷",
+        "Kanada": "🇨🇦", "Bośnia i Herc.": "🇧🇦", "Bośnia i Hercegowina": "🇧🇦", "Bośnia i Herceg.": "🇧🇦", "Katar": "🇶🇦", "Szwajcaria": "🇨🇭",
+        "Brazylia": "🇧🇷", "Maroko": "🇲🇦", "Haiti": "🇭🇹", "Szkocja": "🏴󠁧󠁢󠁳κού󠁿",
         "USA": "🇺🇸", "Paragwaj": "🇵🇾", "Australia": "🇦🇺", "Turcja": "🇹🇷",
-        "Niemcy": "🇩🇪", "Curacao": "🇨🇼", "WKS": "🇨🇮", "Ekwador": "🇪🇨",
+        "Niemcy": "🇩🇪", "Curacao": "🇨🇼", "Curaçao": "🇨🇼", "WKS": "🇨🇮", "Ekwador": "🇪🇨",
         "Holandia": "🇳🇱", "Japonia": "🇯🇵", "Szwecja": "🇸🇪", "Tunezja": "🇹🇳",
-        "Belgia": "🇧🇪", "Egipt": "🇪🇬", "Iran": "🇮🇷", "Nowa Zelandia": "🇳🇿",
-        "Hiszpania": "🇪🇸", "Rep. Ziel. Przyl.": "🇨🇻", "Arabia Saud.": "🇸🇦", "Urugwaj": "🇺🇾",
+        "Belgia": "🇧🇪", "Egipt": "🇪🇬", "Iran": "🇮🇷", "Nowa Zelandia": "🇳🇿", "Nowa Zel.": "🇳🇿",
+        "Hiszpania": "🇪🇸", "Rep. Ziel. Przyl.": "🇨🇻", "Rep. Zielonego Przyl.": "🇨🇻", "Rep. Z. Prz.": "🇨🇻", "Arabia Saud.": "🇸🇦", "Arabia Saudyjska": "🇸🇦", "Arabia S.": "🇸🇦", "Urugwaj": "🇺🇾",
         "Francja": "🇫🇷", "Senegal": "🇸🇳", "Irak": "🇮🇶", "Norwegia": "🇳🇴",
         "Argentyna": "🇦🇷", "Algieria": "🇩🇿", "Austria": "🇦🇹", "Jordania": "🇯🇴",
-        "Portugalia": "🇵🇹", "DR Kongo": "🇨🇩", "Uzbekistan": "🇺🇿", "Kolumbia": "🇨🇴",
+        "Portugalia": "🇵🇹", "DR Kongo": "🇨🇩", "DR Konga": "🇨🇩", "Uzbekistan": "🇺🇿", "Kolumbia": "🇨🇴",
         "Anglia": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Chorwacja": "🇭🇷", "Ghana": "🇬🇭", "Panama": "🇵🇦"
     };
 
+    // MECHANIZM CHRONOLOGICZNY - POSORTOWANY DOKŁADNIE WEDŁUG TERMINARZA TURNIEJU
     const allMatches = [
-        // GRUPA A
-        { id: "Mecz1", group: "A", t1: "Meksyk", t2: "RPA", lock: "2026-06-11T21:00:00", score: "2:0" }, 
-        { id: "Mecz2", group: "A", t1: "Korea Płd.", t2: "Czechy", lock: "2026-06-12T04:00:00", score: "2:1" }, 
-        { id: "Mecz3", group: "A", t1: "Czechy", t2: "RPA", lock: "2026-06-18T18:00:00", score: "" },
-        { id: "Mecz4", group: "A", t1: "Meksyk", t2: "Korea Płd.", lock: "2026-06-19T03:00:00", score: "" },
-        { id: "Mecz5", group: "A", t1: "Czechy", t2: "Meksyk", lock: "2026-06-25T03:00:00", score: "" },
-        { id: "Mecz6", group: "A", t1: "RPA", t2: "Korea Płd.", lock: "2026-06-25T03:00:00", score: "" },
-        // GRUPA B
+        // 11 CZERWCA
+        { id: "Mecz1", group: "A", t1: "Meksyk", t2: "RPA", lock: "2026-06-11T21:00:00", score: "2:1" },
+        // 12 CZERWCA
+        { id: "Mecz2", group: "A", t1: "Korea Płd.", t2: "Czechy", lock: "2026-06-12T04:00:00", score: "1:1" },
         { id: "Mecz7", group: "B", t1: "Kanada", t2: "Bośnia i Herc.", lock: "2026-06-12T21:00:00", score: "" },
+        { id: "Mecz19", group: "D", t1: "USA", t2: "Paragwaj", lock: "2026-06-13T03:00:00", score: "" },
+        // 13 CZERWCA
         { id: "Mecz8", group: "B", t1: "Katar", t2: "Szwajcaria", lock: "2026-06-13T21:00:00", score: "" },
-        { id: "Mecz9", group: "B", t1: "Szwajcaria", t2: "Bośnia i Herc.", lock: "2026-06-18T21:00:00", score: "" },
-        { id: "Mecz10", group: "B", t1: "Kanada", t2: "Katar", lock: "2026-06-19T00:00:00", score: "" },
-        { id: "Mecz11", group: "B", t1: "Szwajcaria", t2: "Kanada", lock: "2026-06-24T21:00:00", score: "" },
-        { id: "Mecz12", group: "B", t1: "Bośnia i Herc.", t2: "Katar", lock: "2026-06-24T21:00:00", score: "" },
-        // GRUPA C
         { id: "Mecz13", group: "C", t1: "Brazylia", t2: "Maroko", lock: "2026-06-14T00:00:00", score: "" },
         { id: "Mecz14", group: "C", t1: "Haiti", t2: "Szkocja", lock: "2026-06-14T03:00:00", score: "" },
-        { id: "Mecz15", group: "C", t1: "Szkocja", t2: "Maroko", lock: "2026-06-20T00:00:00", score: "" },
-        { id: "Mecz16", group: "C", t1: "Brazylia", t2: "Haiti", lock: "2026-06-20T03:00:00", score: "" },
-        { id: "Mecz17", group: "C", t1: "Szkocja", t2: "Brazylia", lock: "2026-06-25T00:00:00", score: "" },
-        { id: "Mecz18", group: "C", t1: "Maroko", t2: "Haiti", lock: "2026-06-25T00:00:00", score: "" },
-        // GRUPA D
-        { id: "Mecz19", group: "D", t1: "USA", t2: "Paragwaj", lock: "2026-06-13T03:00:00", score: "" },
         { id: "Mecz20", group: "D", t1: "Australia", t2: "Turcja", lock: "2026-06-14T06:00:00", score: "" },
-        { id: "Mecz21", group: "D", t1: "USA", t2: "Australia", lock: "2026-06-19T21:00:00", score: "" },
-        { id: "Mecz22", group: "D", t1: "Turcja", t2: "Paragwaj", lock: "2026-06-20T06:00:00", score: "" },
-        { id: "Mecz23", group: "D", t1: "Turcja", t2: "USA", lock: "2026-06-26T04:00:00", score: "" },
-        { id: "Mecz24", group: "D", t1: "Paragwaj", t2: "Australia", lock: "2026-06-26T04:00:00", score: "" },
-        // GRUPA E
+        // 14 CZERWCA
         { id: "Mecz25", group: "E", t1: "Niemcy", t2: "Curacao", lock: "2026-06-14T19:00:00", score: "" },
-        { id: "Mecz26", group: "E", t1: "WKS", t2: "Ekwador", lock: "2026-06-15T01:00:00", score: "" },
-        { id: "Mecz27", group: "E", t1: "Niemcy", t2: "WKS", lock: "2026-06-20T22:00:00", score: "" },
-        { id: "Mecz28", group: "E", t1: "Ekwador", t2: "Curacao", lock: "2026-06-21T02:00:00", score: "" },
-        { id: "Mecz29", group: "E", t1: "Curacao", t2: "WKS", lock: "2026-06-25T22:00:00", score: "" },
-        { id: "Mecz30", group: "E", t1: "Ekwador", t2: "Niemcy", lock: "2026-06-25T22:00:00", score: "" },
-        // GRUPA F
         { id: "Mecz31", group: "F", t1: "Holandia", t2: "Japonia", lock: "2026-06-14T22:00:00", score: "" },
+        { id: "Mecz26", group: "E", t1: "WKS", t2: "Ekwador", lock: "2026-06-15T01:00:00", score: "" },
         { id: "Mecz32", group: "F", t1: "Szwecja", t2: "Tunezja", lock: "2026-06-15T04:00:00", score: "" },
-        { id: "Mecz33", group: "F", t1: "Holandia", t2: "Szwecja", lock: "2026-06-20T19:00:00", score: "" },
-        { id: "Mecz34", group: "F", t1: "Tunezja", t2: "Japonia", lock: "2026-06-21T06:00:00", score: "" },
-        { id: "Mecz35", group: "F", t1: "Japonia", t2: "Szwecja", lock: "2026-06-26T01:00:00", score: "" },
-        { id: "Mecz36", group: "F", t1: "Tunezja", t2: "Holandia", lock: "2026-06-26T01:00:00", score: "" },
-        // GRUPA G
-        { id: "Mecz37", group: "G", t1: "Belgia", t2: "Egipt", lock: "2026-06-15T21:00:00", score: "" },
-        { id: "Mecz38", group: "G", t1: "Iran", t2: "Nowa Zelandia", lock: "2026-06-16T03:00:00", score: "" },
-        { id: "Mecz39", group: "G", t1: "Belgia", t2: "Iran", lock: "2026-06-21T21:00:00", score: "" },
-        { id: "Mecz40", group: "G", t1: "Nowa Zelandia", t2: "Egipt", lock: "2026-06-22T03:00:00", score: "" },
-        { id: "Mecz41", group: "G", t1: "Egipt", t2: "Iran", lock: "2026-06-27T05:00:00", score: "" },
-        { id: "Mecz42", group: "G", t1: "Nowa Zelandia", t2: "Belgia", lock: "2026-06-27T05:00:00", score: "" },
-        // GRUPA H
+        // 15 CZERWCA
         { id: "Mecz43", group: "H", t1: "Hiszpania", t2: "Rep. Ziel. Przyl.", lock: "2026-06-15T18:00:00", score: "" },
+        { id: "Mecz37", group: "G", t1: "Belgia", t2: "Egipt", lock: "2026-06-15T21:00:00", score: "" },
         { id: "Mecz44", group: "H", t1: "Arabia Saud.", t2: "Urugwaj", lock: "2026-06-16T00:00:00", score: "" },
-        { id: "Mecz45", group: "H", t1: "Hiszpania", t2: "Arabia Saud.", lock: "2026-06-21T18:00:00", score: "" },
-        { id: "Mecz46", group: "H", t1: "Urugwaj", t2: "Rep. Ziel. Przyl.", lock: "2026-06-22T00:00:00", score: "" },
-        { id: "Mecz47", group: "H", t1: "Rep. Ziel. Przyl.", t2: "Arabia Saud.", lock: "2026-06-27T02:00:00", score: "" },
-        { id: "Mecz48", group: "H", t1: "Urugwaj", t2: "Hiszpania", lock: "2026-06-27T02:00:00", score: "" },
-        // GRUPA I
+        { id: "Mecz38", group: "G", t1: "Iran", t2: "Nowa Zelandia", lock: "2026-06-16T03:00:00", score: "" },
+        // 16 CZERWCA
         { id: "Mecz49", group: "I", t1: "Francja", t2: "Senegal", lock: "2026-06-16T21:00:00", score: "" },
         { id: "Mecz50", group: "I", t1: "Irak", t2: "Norwegia", lock: "2026-06-17T00:00:00", score: "" },
-        { id: "Mecz51", group: "I", t1: "Norwegia", t2: "Senegal", lock: "2026-06-22T18:00:00", score: "" },
-        { id: "Mecz52", group: "I", t1: "Francja", t2: "Irak", lock: "2026-06-22T23:00:00", score: "" },
-        { id: "Mecz53", group: "I", t1: "Norwegia", t2: "Francja", lock: "2026-06-26T21:00:00", score: "" },
-        { id: "Mecz54", group: "I", t1: "Senegal", t2: "Irak", lock: "2026-06-26T21:00:00", score: "" },
-        // GRUPA J
         { id: "Mecz55", group: "J", t1: "Argentyna", t2: "Algieria", lock: "2026-06-17T03:00:00", score: "" },
         { id: "Mecz56", group: "J", t1: "Austria", t2: "Jordania", lock: "2026-06-17T06:00:00", score: "" },
-        { id: "Mecz57", group: "J", t1: "Argentyna", t2: "Austria", lock: "2026-06-22T19:00:00", score: "" },
-        { id: "Mecz58", group: "J", t1: "Jordania", t2: "Algieria", lock: "2026-06-23T05:00:00", score: "" },
-        { id: "Mecz59", group: "J", t1: "Algieria", t2: "Austria", lock: "2026-06-28T04:00:00", score: "" },
-        { id: "Mecz60", group: "J", t1: "Jordania", t2: "Argentyna", lock: "2026-06-28T04:00:00", score: "" },
-        // GRUPA K
+        // 17 CZERWCA
         { id: "Mecz61", group: "K", t1: "Portugalia", t2: "DR Kongo", lock: "2026-06-17T19:00:00", score: "" },
-        { id: "Mecz62", group: "K", t1: "Uzbekistan", t2: "Kolumbia", lock: "2026-06-18T04:00:00", score: "" },
-        { id: "Mecz63", group: "K", t1: "Portugalia", t2: "Uzbekistan", lock: "2026-06-23T19:00:00", score: "" },
-        { id: "Mecz64", group: "K", t1: "Kolumbia", t2: "DR Kongo", lock: "2026-06-24T04:00:00", score: "" },
-        { id: "Mecz65", group: "K", t1: "Kolumbia", t2: "Portugalia", lock: "2026-06-28T01:30:00", score: "" },
-        { id: "Mecz66", group: "K", t1: "DR Kongo", t2: "Uzbekistan", lock: "2026-06-28T01:30:00", score: "" },
-        // GRUPA L
         { id: "Mecz67", group: "L", t1: "Anglia", t2: "Chorwacja", lock: "2026-06-17T22:00:00", score: "" },
         { id: "Mecz68", group: "L", t1: "Ghana", t2: "Panama", lock: "2026-06-18T01:00:00", score: "" },
+        { id: "Mecz62", group: "K", t1: "Uzbekistan", t2: "Kolumbia", lock: "2026-06-18T04:00:00", score: "" },
+        // 18 CZERWCA
+        { id: "Mecz3", group: "A", t1: "Czechy", t2: "RPA", lock: "2026-06-18T18:00:00", score: "" },
+        { id: "Mecz9", group: "B", t1: "Szwajcaria", t2: "Bośnia i Herc.", lock: "2026-06-18T21:00:00", score: "" },
+        { id: "Mecz10", group: "B", t1: "Kanada", t2: "Katar", lock: "2026-06-19T00:00:00", score: "" },
+        { id: "Mecz4", group: "A", t1: "Meksyk", t2: "Korea Płd.", lock: "2026-06-19T03:00:00", score: "" },
+        // 19 CZERWCA
+        { id: "Mecz21", group: "D", t1: "USA", t2: "Australia", lock: "2026-06-19T21:00:00", score: "" },
+        { id: "Mecz15", group: "C", t1: "Szkocja", t2: "Maroko", lock: "2026-06-20T00:00:00", score: "" },
+        { id: "Mecz16", group: "C", t1: "Brazylia", t2: "Haiti", lock: "2026-06-20T03:00:00", score: "" },
+        // 20 CZERWCA
+        { id: "Mecz22", group: "D", t1: "Turcja", t2: "Paragwaj", lock: "2026-06-20T06:00:00", score: "" },
+        { id: "Mecz33", group: "F", t1: "Holandia", t2: "Szwecja", lock: "2026-06-20T19:00:00", score: "" },
+        { id: "Mecz27", group: "E", t1: "Niemcy", t2: "WKS", lock: "2026-06-20T22:00:00", score: "" },
+        { id: "Mecz28", group: "E", t1: "Ekwador", t2: "Curacao", lock: "2026-06-21T02:00:00", score: "" },
+        // 21 CZERWCA
+        { id: "Mecz34", group: "F", t1: "Tunezja", t2: "Japonia", lock: "2026-06-21T06:00:00", score: "" },
+        { id: "Mecz45", group: "H", t1: "Hiszpania", t2: "Arabia Saud.", lock: "2026-06-21T18:00:00", score: "" },
+        { id: "Mecz39", group: "G", t1: "Belgia", t2: "Iran", lock: "2026-06-21T21:00:00", score: "" },
+        { id: "Mecz46", group: "H", t1: "Urugwaj", t2: "Rep. Ziel. Przyl.", lock: "2026-06-22T00:00:00", score: "" },
+        // 22 CZERWCA
+        { id: "Mecz40", group: "G", t1: "Nowa Zelandia", t2: "Egipt", lock: "2026-06-22T03:00:00", score: "" },
+        { id: "Mecz57", group: "J", t1: "Argentyna", t2: "Austria", lock: "2026-06-22T19:00:00", score: "" },
+        { id: "Mecz52", group: "I", t1: "Francja", t2: "Irak", lock: "2026-06-22T23:00:00", score: "" },
+        { id: "Mecz51", group: "I", t1: "Norwegia", t2: "Senegal", lock: "2026-06-22T18:00:00", score: "" },
+        // 23 CZERWCA
+        { id: "Mecz58", group: "J", t1: "Jordania", t2: "Algieria", lock: "2026-06-23T05:00:00", score: "" },
+        { id: "Mecz63", group: "K", t1: "Portugalia", t2: "Uzbekistan", lock: "2026-06-23T19:00:00", score: "" },
         { id: "Mecz69", group: "L", t1: "Anglia", t2: "Ghana", lock: "2026-06-23T22:00:00", score: "" },
         { id: "Mecz70", group: "L", t1: "Panama", t2: "Chorwacja", lock: "2026-06-24T01:00:00", score: "" },
+        // 24 CZERWCA
+        { id: "Mecz64", group: "K", t1: "Kolumbia", t2: "DR Kongo", lock: "2026-06-24T04:00:00", score: "" },
+        { id: "Mecz11", group: "B", t1: "Szwajcaria", t2: "Kanada", lock: "2026-06-24T21:00:00", score: "" },
+        { id: "Mecz12", group: "B", t1: "Bośnia i Herc.", t2: "Katar", lock: "2026-06-24T21:00:00", score: "" },
+        
+        // KOLEJKA 3 - MECZE ROZSTRZYGAJĄCE RÓWNOLEGŁE
+        // 25 CZERWCA
+        { id: "Mecz18", group: "C", t1: "Maroko", t2: "Haiti", lock: "2026-06-25T00:00:00", score: "" },
+        { id: "Mecz17", group: "C", t1: "Szkocja", t2: "Brazylia", lock: "2026-06-25T00:00:00", score: "" },
+        { id: "Mecz6", group: "A", t1: "RPA", t2: "Korea Płd.", lock: "2026-06-25T03:00:00", score: "" },
+        { id: "Mecz5", group: "A", t1: "Czechy", t2: "Meksyk", lock: "2026-06-25T03:00:00", score: "" },
+        { id: "Mecz29", group: "E", t1: "Curacao", t2: "WKS", lock: "2026-06-25T22:00:00", score: "" },
+        { id: "Mecz30", group: "E", t1: "Ekwador", t2: "Niemcy", lock: "2026-06-25T22:00:00", score: "" },
+        // 26 CZERWCA
+        { id: "Mecz35", group: "F", t1: "Japonia", t2: "Szwecja", lock: "2026-06-26T01:00:00", score: "" },
+        { id: "Mecz36", group: "F", t1: "Tunezja", t2: "Holandia", lock: "2026-06-26T01:00:00", score: "" },
+        { id: "Mecz24", group: "D", t1: "Paragwaj", t2: "Australia", lock: "2026-06-26T04:00:00", score: "" },
+        { id: "Mecz23", group: "D", t1: "Turcja", t2: "USA", lock: "2026-06-26T04:00:00", score: "" },
+        { id: "Mecz53", group: "I", t1: "Norwegia", t2: "Francja", lock: "2026-06-26T21:00:00", score: "" },
+        { id: "Mecz54", group: "I", t1: "Senegal", t2: "Irak", lock: "2026-06-26T21:00:00", score: "" },
+        // 27 CZERWCA
+        { id: "Mecz47", group: "H", t1: "Rep. Ziel. Przyl.", t2: "Arabia Saud.", lock: "2026-06-27T02:00:00", score: "" },
+        { id: "Mecz48", group: "H", t1: "Urugwaj", t2: "Hiszpania", lock: "2026-06-27T02:00:00", score: "" },
+        { id: "Mecz41", group: "G", t1: "Egipt", t2: "Iran", lock: "2026-06-27T05:00:00", score: "" },
+        { id: "Mecz42", group: "G", t1: "Nowa Zelandia", t2: "Belgia", lock: "2026-06-27T05:00:00", score: "" },
+        { id: "Mecz72", group: "L", t1: "Chorwacja", t2: "Ghana", lock: "2026-06-27T23:00:00", score: "" },
         { id: "Mecz71", group: "L", t1: "Panama", t2: "Anglia", lock: "2026-06-27T23:00:00", score: "" },
-        { id: "Mecz72", group: "L", t1: "Chorwacja", t2: "Ghana", lock: "2026-06-27T23:00:00", score: "" }
+        // 28 CZERWCA
+        { id: "Mecz66", group: "K", t1: "DR Kongo", t2: "Uzbekistan", lock: "2026-06-28T01:30:00", score: "" },
+        { id: "Mecz65", group: "K", t1: "Kolumbia", t2: "Portugalia", lock: "2026-06-28T01:30:00", score: "" },
+        { id: "Mecz59", group: "J", t1: "Algieria", t2: "Austria", lock: "2026-06-28T04:00:00", score: "" },
+        { id: "Mecz60", group: "J", t1: "Jordania", t2: "Argentyna", lock: "2026-06-28T04:00:00", score: "" }
     ];
 
     function getFlagAnd3LetterCode(teamName) {
@@ -286,7 +295,6 @@
         }
     }
 
-    // Pomocnicza funkcja sprawdzająca czy gracz wysłał już tę grupę
     function isGroupSubmittedByPlayer(groupLetter) {
         const nick = localStorage.getItem('typerNick') || "";
         return localStorage.getItem(`submitted_group_${groupLetter.toLowerCase()}_${nick.toLowerCase()}`) === "true";
@@ -342,7 +350,6 @@
                     localDraftScores[`home-${m.id}`] = parts[0].trim();
                     localDraftScores[`away-${m.id}`] = parts[1].trim();
                     
-                    // Jeśli w bazie są już wpisane wyniki, traktujemy grupę jako zapisaną
                     const nickKey = localStorage.getItem('typerNick') || "";
                     localStorage.setItem(`submitted_group_${m.group.toLowerCase()}_${nickKey.toLowerCase()}`, "true");
                 }
@@ -355,7 +362,6 @@
         bar.innerHTML = "";
         groupsOrder.forEach((g, idx) => {
             const span = document.createElement('span');
-            // Jeśli grupa jest zatwierdzona, dodajemy małego ptaszka do paska postępu
             const isDone = isGroupSubmittedByPlayer(g);
             span.className = `progress-step ${idx === currentGroupIndex ? 'active' : ''}`;
             span.innerText = isDone ? `${g} ✓` : g; 
@@ -373,7 +379,6 @@
 
     function saveCurrentInputsToDraft() {
         const currentLetter = groupsOrder[currentGroupIndex];
-        // Nie nadpisujemy danych z drafu, jeśli ta grupa jest już permanentnie zablokowana
         if (isGroupSubmittedByPlayer(currentLetter)) return;
 
         const rows = document.querySelectorAll('.match-row');
@@ -397,12 +402,12 @@
         container.innerHTML = "";
         const now = new Date();
 
+        // Przy wpisywaniu bierzemy tylko mecze z danej grupy literowej
         const groupMatches = allMatches.filter(m => m.group === currentLetter);
         const isGroupPermanentlyLocked = isGroupSubmittedByPlayer(currentLetter);
 
         groupMatches.forEach((match, index) => {
             const lockTime = new Date(match.lock);
-            // Mecz jest zablokowany jeśli minął czas LUB jeśli grupa została już wysłana
             const isLocked = (now >= lockTime) || isGroupPermanentlyLocked;
 
             const div = document.createElement('div');
@@ -472,13 +477,11 @@
         const currentLetter = groupsOrder[currentGroupIndex];
         const submitContainer = document.getElementById('submit-container');
 
-        // Jeżeli grupa została wysłana, zamiast przycisku wyświetlamy ładny boks informacyjny
         if (isGroupSubmittedByPlayer(currentLetter)) {
             submitContainer.innerHTML = `<div class="success-box">⭐ Ta grupa została już przez Ciebie zatwierdzona i zablokowana!</div>`;
             return;
         }
 
-        // Przywracamy domyślny przycisk jeśli grupa jest otwarta
         submitContainer.innerHTML = `
             <button id="submit-btn" onclick="submitCurrentGroup()" style="margin-top: 25px; font-size: 18px; box-shadow: 0 4px 10px rgba(1, 195, 141, 0.3);" disabled>
                 Wypełnij wszystkie mecze grupy
@@ -510,7 +513,6 @@
         const currentLetter = groupsOrder[currentGroupIndex];
         const nick = localStorage.getItem('typerNick');
 
-        // Na wszelki wypadek podwójne ubezpieczenie przed ponownym wysłaniem
         if (isGroupSubmittedByPlayer(currentLetter)) return;
 
         saveCurrentInputsToDraft();
@@ -520,7 +522,6 @@
         rows.forEach(row => {
             const id = row.getAttribute('data-id');
             const isLocked = row.getAttribute('data-locked') === "true";
-            // Wysyłamy tylko to co nie było wcześniej zablokowane czasem
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
@@ -537,7 +538,6 @@
             });
             await res.json();
 
-            // Sfinalizowanie blokady grupy w pamięci lokalnej
             localStorage.setItem(`submitted_group_${currentLetter.toLowerCase()}_${nick.toLowerCase()}`, "true");
 
             const indexToUpdate = existingDatabaseRows.findIndex(r => r.gracz && r.gracz.toLowerCase() === nick.toLowerCase());
@@ -550,15 +550,11 @@
             if (currentGroupIndex < groupsOrder.length - 1) {
                 alert(`Grupa ${groupsOrder[currentGroupIndex]} została zapisana i ZABLOKOWANA przed zmianami! 🚀`);
                 currentGroupIndex++;
-                renderProgressBar(); 
-                renderActiveGroup(); 
-                loadAllScores();
+                renderProgressBar(); renderActiveGroup(); loadAllScores();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
                 alert("Wszystkie grupy zostały oficjalnie zapisane i zablokowane! Powodzenia! 🎉");
-                renderProgressBar();
-                renderActiveGroup();
-                loadAllScores();
+                renderProgressBar(); renderActiveGroup(); loadAllScores();
             }
         } catch (error) {
             console.error(error);
@@ -602,6 +598,7 @@
             const trHead = document.createElement('tr');
             trHead.innerHTML = "<th style='position:sticky; left:0; background:#1a2238; z-index:3;'>Gracz</th>";
             
+            // Renderowanie kolumn w nagłówku tabeli - leci chronologicznie według allMatches
             allMatches.forEach(m => {
                 const homeFormat = getFlagAnd3LetterCode(m.t1);
                 const awayFormat = getFlagAnd3LetterCode(m.t2);
@@ -610,6 +607,7 @@
                 trHead.innerHTML += `
                     <th>
                         <div class="th-match-header" style="flex-direction:column;">
+                            <div style="font-size:9px; color:#8a99ad; margin-bottom:2px;">GR. ${m.group}</div>
                             <div>${homeFormat}-${awayFormat}</div>
                             ${resultSub}
                         </div>
