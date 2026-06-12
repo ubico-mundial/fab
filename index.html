@@ -21,7 +21,7 @@
         button { background: var(--primary); color: var(--bg); font-weight: bold; cursor: pointer; font-size: 16px; }
         button:disabled { background: #4a5568; color: #a0aec0; cursor: not-allowed; box-shadow: none !important; }
         button:hover:not(:disabled) { opacity: 0.9; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         
         .match-row { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; padding-bottom: 8px; border-bottom: 1px solid #2a3558; }
         .match-info { display: flex; flex-direction: column; width: 65%; }
@@ -32,7 +32,6 @@
         .score-inputs input { width: 42px; text-align: center; margin: 0; padding: 6px; background: #2a3558; color: white; border: none; border-radius: 4px; font-size: 16px; }
         .score-inputs input:disabled { background: #131927; color: #6c7a9c; cursor: not-allowed; }
         
-        /* Styl dla flag Twemoji, żeby ładnie dopasowywały się do tekstu na PC */
         img.emoji { height: 1.2em; width: 1.2em; margin: 0 .15em; vertical-align: -0.2em; }
         
         .table-container { overflow-x: auto; }
@@ -95,7 +94,7 @@
     <h1>🏆 UBICO MUNDIAL 2026 ⚽</h1>
 
     <div id="login-screen" class="card">
-        <h2>Wpisz swój Nick, aby wejść do gry:</h2>
+        <h2>Wpisz swój Nick, aby weść do gry:</h2>
         <input type="text" id="nick-input" placeholder="np. Fabby...">
         <button id="login-btn" onclick="loginUser()">Dołącz do Typera</button>
     </div>
@@ -265,7 +264,6 @@
         return `${flag} ${teamName.substring(0, 3).toUpperCase()}`;
     }
 
-    // Funkcja odpalająca Twemoji po zmianach w HTML, aby podmienić flagi systemowe na graficzne obrazki
     function refreshTwemoji() {
         if (window.twemoji) {
             twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
@@ -296,6 +294,7 @@
     }
 
     function showApp(nick) {
+        // UKRYWAMY EKRAN LOGOWANIA, POKAZUJEMY PANEL APKI
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('app-screen').classList.remove('hidden');
         document.getElementById('user-display').innerText = nick;
@@ -402,7 +401,7 @@
         });
 
         validateGroupCompletion();
-        refreshTwemoji(); // Konwertuje flagi w sekcji obstawiania
+        refreshTwemoji(); 
     }
 
     function handleHomeInput(matchId) {
@@ -613,7 +612,7 @@
                 leaderboardBody.appendChild(trRank);
             });
 
-            refreshTwemoji(); // Konwertuje flagi w nagłówkach dużej tabeli na PC
+            refreshTwemoji(); 
 
         } catch (error) {
             console.error(error);
