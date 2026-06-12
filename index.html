@@ -92,7 +92,7 @@
     <h1>🏆 UBICO MUNDIAL 2026 ⚽</h1>
 
     <div id="login-screen" class="card">
-        <h2>Wpisz swój Nick, aby wejść do gry:</h2>
+        <h2>Wpisz swój Nick, aby weść do gry:</h2>
         <input type="text" id="nick-input" placeholder="np. Fabby...">
         <button id="login-btn" onclick="loginUser()">Dołącz do Typera</button>
     </div>
@@ -262,53 +262,30 @@
         return `<span class="twa"></span> ${flag} ${teamName.substring(0, 3).toUpperCase()}`;
     }
 
-    async function preloadDatabaseAndCheckLogin() {
-        try {
-            const res = await fetch(API_URL);
-            const json = await res.json();
-            existingDatabaseRows = json[KEY_NAME] || [];
-        } catch (e) {
-            console.error("Błąd wstępnego ładowania bazy danych", e);
-        }
-
+    // Załaduj tabelę na starcie, a jeśli gracz jest już zalogowany w pamięci - wpuść go automatycznie
+    async function initApp() {
+        await loadAllScores(); // Pobiera dane z bazy do tablicy existingDatabaseRows
+        
         const savedNick = localStorage.getItem('typerNick');
         if (savedNick) { 
             showApp(savedNick); 
-        } else {
-            loadAllScores(); 
         }
     }
 
-    window.onload = preloadDatabaseAndCheckLogin;
+    window.onload = initApp;
 
-    async function loginUser() {
+    function loginUser() {
         const nickInput = document.getElementById('nick-input');
         const nick = nickInput.value.trim();
 
         if (nick.length < 3) return alert('Nick musi mieć min. 3 znaki!');
 
-        const loginBtn = document.getElementById('login-btn');
-        loginBtn.disabled = true;
-        loginBtn.innerText = "Logowanie...";
-
-        if(existingDatabaseRows.length === 0) {
-            try {
-                const res = await fetch(API_URL);
-                const json = await res.json();
-                existingDatabaseRows = json[KEY_NAME] || [];
-            } catch(e) {
-                alert("Błąd połączenia.");
-                loginBtn.disabled = false;
-                loginBtn.innerText = "Dołącz do Typera";
-                return;
-            }
-        }
-
+        // Zapisz na stałe w przeglądarce telefonu/komputera
         localStorage.setItem('typerNick', nick);
         showApp(nick);
     }
 
-    async function showApp(nick) {
+    function showApp(nick) {
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('app-screen').classList.remove('hidden');
         document.getElementById('user-display').innerText = nick;
@@ -317,7 +294,6 @@
 
         renderProgressBar();
         renderActiveGroup();
-        loadAllScores();
     }
 
     function fillLocalDraftFromDatabase(nick) {
@@ -441,7 +417,7 @@
         const rows = document.querySelectorAll('.match-row');
         let allFilled = true;
         rows.forEach(row => {
-            const isLocked = row.getAttribute('data-locked'] === "true";
+            const isLocked = row.getAttribute('data-locked') === "true";
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
