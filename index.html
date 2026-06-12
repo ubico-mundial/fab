@@ -281,12 +281,10 @@
         }
     }
 
-    // Zmodyfikowana inicjalizacja - najpierw pobiera dane w tle ekranu ładowania
     async function initApp() {
         try {
             await loadAllScores(); 
             
-            // Dopiero po wczytaniu danych decydujemy co pokazać
             const savedNick = localStorage.getItem('typerNick');
             
             // Ukrywamy ekran ładowania
@@ -295,7 +293,6 @@
             if (savedNick) { 
                 showApp(savedNick); 
             } else {
-                // Jeśli brak nicku, pokazujemy czysty ekran logowania
                 document.getElementById('login-screen').classList.remove('hidden');
                 refreshTwemoji();
             }
@@ -450,7 +447,7 @@
         const rows = document.querySelectorAll('.match-row');
         let allFilled = true;
         rows.forEach(row => {
-            const isLocked = row.getAttribute('data-locked'] === "true";
+            const isLocked = row.getAttribute('data-locked') === "true";
             if (!isLocked) {
                 const home = row.querySelector('.home-team').value;
                 const away = row.querySelector('.away-team').value;
